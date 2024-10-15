@@ -1,11 +1,8 @@
 package com.ctrlaltcomplete.trivia.controller;
 
 import jakarta.servlet.http.HttpSession;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 public class HelloController {
@@ -21,21 +18,21 @@ public class HelloController {
                 "<p>When ready, click <strong>begin</strong> to start your journey to become a quizzard.</p>" +
                 "<p>Alternatively, see your score on the <strong>leaderboard</strong>.</p>" +
                 "<p>Stay tuned for new changes soon!</p>" +
-                "<button>Begin</button>" +
-                "<button>Leaderboard</button>" +
+
+                "<a href='/game-on'><button>Begin</button></a>" +
+                "<a href='/leaderboard'><button>Leaderboard</button></a>" +
+
                 "</body>" +
                 "</html>";
     }
 
     @GetMapping("/game-on")
     public String begin() {
-        return "game-on";
+        return "<html><body><h1>Game On!</h1><p>Welcome to the quiz!</p></body></html>";
     }
 
-
- @GetMapping("/leaderboard")
+    @GetMapping("/leaderboard")
     public String leaderboard() {
-        return "leaderboard";
+        return "<html><body><h1>Leaderboard</h1><p>Here are the top scores!</p></body></html>";
     }
-
 }
