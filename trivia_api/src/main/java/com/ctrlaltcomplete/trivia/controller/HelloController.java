@@ -18,6 +18,7 @@ public class HelloController {
                 "<p>When ready, click <strong>begin</strong> to start your journey to become a quizzard.</p>" +
                 "<p>Alternatively, see your score on the <strong>leaderboard</strong>.</p>" +
                 "<p>Stay tuned for new changes soon!</p>" +
+                "<button>Button</button>" +
                 "</body>" +
                 "</html>";
     }
