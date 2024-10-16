@@ -3,14 +3,19 @@ package com.ctrlaltcomplete.trivia.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private String SECRET_KEY = "secret";
+//    private String SECRET_KEY = "secret";
+
+    private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);  // This generates a secure key
+
 
     public String generateToken(String email) {
         return Jwts.builder()
