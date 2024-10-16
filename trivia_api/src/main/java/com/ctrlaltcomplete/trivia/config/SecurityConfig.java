@@ -40,8 +40,4 @@ public class SecurityConfig {
 //        return super.authenticationManagerBean();
 //    }
 
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
 }
