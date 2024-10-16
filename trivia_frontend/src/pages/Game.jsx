@@ -21,7 +21,9 @@ const Game = () => {
 
   const fetchQuestions = async (retryCount = 0) => {
     try {
-      const response = await fetch("https://opentdb.com/api.php?amount=10");
+      const response = await fetch(
+        "https://opentdb.com/api.php?amount=10&type=multiple"
+      );
       if (!response.ok) {
         if (retryCount < 3) {
           console.log(`Retrying fetch: Attempt ${retryCount + 1}`);
@@ -118,7 +120,7 @@ const Game = () => {
         Question {currentQuestionIndex + 1} of {questions.length}:
       </h3>
       {/* Display the question */}
-      <p dangerouslySetInnerHTML={{ __html: currentQuestion.question }} />
+      <h1 dangerouslySetInnerHTML={{ __html: currentQuestion.question }} />
 
       {/* Display the shuffled answers in two rows (2 buttons per row) */}
       <div
@@ -126,7 +128,7 @@ const Game = () => {
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "space-between",
-          maxWidth: "400px",
+          maxWidth: "900px",
           margin: "20px auto",
         }}
       >
@@ -138,7 +140,7 @@ const Game = () => {
               width: "48%", // 48% width for 2 buttons per row
               margin: "5px 0",
               padding: "10px",
-              fontSize: "16px",
+              fontSize: "24px",
               cursor: "pointer",
             }}
           >

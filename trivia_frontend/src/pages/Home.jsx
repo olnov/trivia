@@ -7,6 +7,7 @@ const Home = () => {
 
   const handleClick = () => {
     navigate("/game");
+    fetchQuestions();
   };
   return (
     <>
