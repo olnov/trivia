@@ -1,6 +1,9 @@
+import { Button } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Game = () => {
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -28,6 +31,7 @@ const Game = () => {
         }
       }
       const data = await response.json();
+      console.log({ data });
       setQuestions(data.results);
       setAnswers(
         shuffleAnswers(
@@ -40,10 +44,6 @@ const Game = () => {
       console.error(err);
     }
   };
-
-  useEffect(() => {
-    fetchQuestions();
-  }, []);
 
   // Timer for 45 seconds countdown
   useEffect(() => {
@@ -93,7 +93,8 @@ const Game = () => {
   }
 
   if (questions.length === 0) {
-    return <p>Loading questions...</p>;
+    // return <p>Loading questions...</p>;
+    return <Button onClick={fetchQuestions}>Load questions</Button>;
   }
 
   if (quizFinished || time === 0) {
@@ -103,6 +104,7 @@ const Game = () => {
         <p>Correct Answers: {correctCount}</p>
         <p>Incorrect Answers: {incorrectCount}</p>
         <p>Total Time Taken: {45 - time} seconds</p>
+        <Button onClick={() => navigate("/home")}>Play Again</Button>
       </div>
     );
   }
@@ -129,7 +131,7 @@ const Game = () => {
         }}
       >
         {answers.map((answer, index) => (
-          <button
+          <Button
             key={index}
             onClick={() => handleAnswerClick(answer)}
             style={{
@@ -141,7 +143,7 @@ const Game = () => {
             }}
           >
             {answer}
-          </button>
+          </Button>
         ))}
       </div>
 
