@@ -19,10 +19,10 @@ const Game = () => {
     return allAnswers.sort(() => Math.random() - 0.5);
   };
 
-  const fetchQuestions = async (retryCount = 0) => {
+  const fetchQuestions = async (retryCount = 0, difficulty) => {
     try {
       const response = await fetch(
-        "https://opentdb.com/api.php?amount=10&type=multiple"
+        `https://opentdb.com/api.php?amount=10&difficulty=${difficulty}&type=multiple`
       );
       if (!response.ok) {
         if (retryCount < 3) {
@@ -33,7 +33,7 @@ const Game = () => {
         }
       }
       const data = await response.json();
-      console.log({ data });
+      //   console.log({ data });
       setQuestions(data.results);
       setAnswers(
         shuffleAnswers(
@@ -46,6 +46,10 @@ const Game = () => {
       console.error(err);
     }
   };
+
+  //   useEffect(() => {
+  //     fetchQuestions(0, "easy");
+  //   }, []);
 
   // Timer for 45 seconds countdown
   useEffect(() => {
@@ -96,7 +100,31 @@ const Game = () => {
 
   if (questions.length === 0) {
     // return <p>Loading questions...</p>;
-    return <Button onClick={fetchQuestions}>Load questions</Button>;
+    return (
+      <>
+        <div
+          style={{
+            width: "48%", // 48% width for 2 buttons per row
+            margin: "5px 0",
+            padding: "10px",
+            fontSize: "24px",
+            cursor: "pointer",
+          }}
+        >
+          <Button onClick={() => fetchQuestions(0, "easy")}>
+            Load Easy questions
+          </Button>
+
+          <Button onClick={() => fetchQuestions(0, "medium")}>
+            Load Medium questions
+          </Button>
+
+          <Button onClick={() => fetchQuestions(0, "hard")}>
+            Load Hard questions
+          </Button>
+        </div>
+      </>
+    );
   }
 
   if (quizFinished || time === 0) {
