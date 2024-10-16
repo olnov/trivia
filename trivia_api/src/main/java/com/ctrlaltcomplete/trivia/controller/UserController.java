@@ -2,6 +2,7 @@ package com.ctrlaltcomplete.trivia.controller;
 
 import com.ctrlaltcomplete.trivia.model.User;
 import com.ctrlaltcomplete.trivia.repository.UserRepository;
+import com.ctrlaltcomplete.trivia.security.CustomUserDetailsService;
 import com.ctrlaltcomplete.trivia.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,9 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -44,7 +48,7 @@ public class UserController {
     @PostMapping("/users")
     public ResponseEntity<User> createUser (@RequestBody User user) {
         try {
-            User newUser = userRepository.save(user);
+            User newUser = userDetailsService.saveUser(user);
             return new ResponseEntity<>(newUser, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
