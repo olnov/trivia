@@ -7,7 +7,11 @@ const Home = () => {
 
   const handleClick = () => {
     navigate("/game");
-    fetchQuestions();
+    // fetchQuestions();
+  };
+
+  const handleLeaderboardClick = async () => {
+    navigate("/leaderboard");
   };
   return (
     <>
@@ -31,7 +35,7 @@ const Home = () => {
         </Box>
         <Box>
           <Button onClick={handleClick}>Begin</Button>&nbsp;
-          <Button>Leaderboard</Button>
+          <Button onClick={handleLeaderboardClick}>Leaderboard</Button>
         </Box>
       </Box>
     </>

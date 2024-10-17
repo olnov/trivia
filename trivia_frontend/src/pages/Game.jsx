@@ -24,6 +24,52 @@ const Game = () => {
     return allAnswers.sort(() => Math.random() - 0.5);
   };
 
+  const sendScoreToBackend = async () => {
+    const playerId = "CurrentSessionId"; // Replace with actual session ID retrieval logic
+    const timestamp = new Date().toISOString(); // Local timestamp
+
+    const scoreData = questions.map((question, index) => {
+      const playersAnswer = answers[index]; // What the player answered
+      const correctAnswer = question.correct_answer; // Correct answer from the trivia
+      const isCorrect = playersAnswer === correctAnswer; // Check if the player's answer is correct
+      let scoreMultiplier = 1;
+
+      if (difficulty === "medium") scoreMultiplier = 2;
+      else if (difficulty === "hard") scoreMultiplier = 3;
+
+      const score = isCorrect ? scoreMultiplier : 0; // Score for each question
+
+      return {
+        player_id: playerId,
+        trivia_id: question.question, // Assuming the question text is unique as an ID, replace with actual ID if available
+        players_answer: playersAnswer,
+        correct_answer: correctAnswer,
+        is_correct: isCorrect,
+        difficulty: difficulty,
+        score: score,
+        answered_at: timestamp,
+      };
+    });
+
+    try {
+      const response = await fetch("YOUR_BACKEND_API_URL", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(scoreData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send score data to backend");
+      }
+
+      console.log("Score data successfully sent to backend");
+    } catch (error) {
+      console.error("Error sending score data:", error);
+    }
+  };
+
   const fetchQuestions = async (retryCount = 0, selectedDifficulty) => {
     try {
       const response = await fetch(
@@ -109,6 +155,7 @@ const Game = () => {
       );
     } else {
       setQuizFinished(true); // End the quiz if all questions are answered
+      sendScoreToBackend();
     }
   };
 
@@ -199,6 +246,7 @@ const Game = () => {
 
       {/* Display the countdown timer */}
       <p>Time Remaining: {time} seconds</p>
+      {/* <Button onClick={() => navigate("/home")}>Exit</Button> */}
     </div>
   );
 };
