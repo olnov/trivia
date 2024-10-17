@@ -12,6 +12,7 @@ const Game = () => {
   const [correctCount, setCorrectCount] = useState(0); // Track correct answers
   const [incorrectCount, setIncorrectCount] = useState(0); // Track incorrect answers
   const [quizFinished, setQuizFinished] = useState(false); // Track if the quiz has finished
+  const [difficulty, setDifficulty] = useState("easy"); // Track difficulty
 
   // Function to shuffle answers (correct and incorrect)
   const shuffleAnswers = (correctAnswer, incorrectAnswers) => {
@@ -19,21 +20,20 @@ const Game = () => {
     return allAnswers.sort(() => Math.random() - 0.5);
   };
 
-  const fetchQuestions = async (retryCount = 0, difficulty) => {
+  const fetchQuestions = async (retryCount = 0, selectedDifficulty) => {
     try {
       const response = await fetch(
-        `https://opentdb.com/api.php?amount=10&difficulty=${difficulty}&type=multiple`
+        `https://opentdb.com/api.php?amount=10&difficulty=${selectedDifficulty}&type=multiple`
       );
       if (!response.ok) {
         if (retryCount < 3) {
           console.log(`Retrying fetch: Attempt ${retryCount + 1}`);
-          //   return fetchQuestions(retryCount + 1); // Retry fetching questions
         } else {
           throw new Error("Failed to fetch questions after multiple attempts.");
         }
       }
       const data = await response.json();
-      //   console.log({ data });
+      setDifficulty(selectedDifficulty); // Set the difficulty for final score calculation
       setQuestions(data.results);
       setAnswers(
         shuffleAnswers(
@@ -46,10 +46,6 @@ const Game = () => {
       console.error(err);
     }
   };
-
-  //   useEffect(() => {
-  //     fetchQuestions(0, "easy");
-  //   }, []);
 
   // Timer for 45 seconds countdown
   useEffect(() => {
@@ -75,9 +71,9 @@ const Game = () => {
     const correctAnswer = questions[currentQuestionIndex].correct_answer;
 
     if (answer === correctAnswer) {
-      setCorrectCount((prev) => prev + 1);
+      setCorrectCount((prev) => prev + 1); // Increment correct answers
     } else {
-      setIncorrectCount((prev) => prev + 1);
+      setIncorrectCount((prev) => prev + 1); // Increment incorrect answers
     }
 
     const nextQuestionIndex = currentQuestionIndex + 1;
@@ -99,12 +95,11 @@ const Game = () => {
   }
 
   if (questions.length === 0) {
-    // return <p>Loading questions...</p>;
     return (
       <>
         <div
           style={{
-            width: "48%", // 48% width for 2 buttons per row
+            width: "48%",
             margin: "5px 0",
             padding: "10px",
             fontSize: "24px",
@@ -114,11 +109,9 @@ const Game = () => {
           <Button onClick={() => fetchQuestions(0, "easy")}>
             Load Easy questions
           </Button>
-
           <Button onClick={() => fetchQuestions(0, "medium")}>
             Load Medium questions
           </Button>
-
           <Button onClick={() => fetchQuestions(0, "hard")}>
             Load Hard questions
           </Button>
@@ -128,12 +121,23 @@ const Game = () => {
   }
 
   if (quizFinished || time === 0) {
+    // Calculate the final score based on the difficulty and correct answers
+    let finalScoreMultiplier = 1; // Default for easy
+    if (difficulty === "medium") {
+      finalScoreMultiplier = 2; // Double points for medium
+    } else if (difficulty === "hard") {
+      finalScoreMultiplier = 3; // Triple points for hard
+    }
+
+    const finalScore = correctCount * finalScoreMultiplier; // Multiply correct answers by the difficulty multiplier
+
     return (
       <div>
         <h1>Quiz Finished!</h1>
         <p>Correct Answers: {correctCount}</p>
         <p>Incorrect Answers: {incorrectCount}</p>
         <p>Total Time Taken: {45 - time} seconds</p>
+        <h1>Score: {finalScore}</h1>
         <Button onClick={() => navigate("/home")}>Play Again</Button>
       </div>
     );
@@ -147,7 +151,6 @@ const Game = () => {
       <h3>
         Question {currentQuestionIndex + 1} of {questions.length}:
       </h3>
-      {/* Display the question */}
       <h1 dangerouslySetInnerHTML={{ __html: currentQuestion.question }} />
 
       {/* Display the shuffled answers in two rows (2 buttons per row) */}
@@ -165,7 +168,7 @@ const Game = () => {
             key={index}
             onClick={() => handleAnswerClick(answer)}
             style={{
-              width: "48%", // 48% width for 2 buttons per row
+              width: "48%",
               margin: "5px 0",
               padding: "10px",
               fontSize: "24px",
