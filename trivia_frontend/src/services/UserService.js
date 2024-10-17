@@ -27,7 +27,7 @@ export const login = async (email, password)=> {
         const data = await response.json();
         return data;
     } else {
-        throw new Error(`Authenication failed: ${response.status}`);
+        throw new Error(`Authentication failed: ${response.status}`);
     }
 }
 
@@ -44,6 +44,6 @@ export const signUp = async (fullName, email, password) => {
     if (response.status === 200) {
         return "User successfully registered";
     } else {
-        throw new Error(`Error regestering new user: ${response.status}`);
+        throw new Error(`Error registering new user: ${response.status}`);
     }
 }
