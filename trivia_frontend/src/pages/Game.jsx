@@ -1,6 +1,7 @@
 import { Button } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 const Game = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
@@ -12,11 +13,14 @@ const Game = () => {
   const [incorrectCount, setIncorrectCount] = useState(0); // Track incorrect answers
   const [quizFinished, setQuizFinished] = useState(false); // Track if the quiz has finished
   const [difficulty, setDifficulty] = useState("easy"); // Track difficulty
+  const [audioPlayed, setAudioPlayed] = useState(false); // Track if audio has played
+
   // Function to shuffle answers (correct and incorrect)
   const shuffleAnswers = (correctAnswer, incorrectAnswers) => {
     const allAnswers = [...incorrectAnswers, correctAnswer];
     return allAnswers.sort(() => Math.random() - 0.5);
   };
+
   const fetchQuestions = async (retryCount = 0, selectedDifficulty) => {
     try {
       const response = await fetch(
@@ -43,6 +47,7 @@ const Game = () => {
       console.error(err);
     }
   };
+
   // Timer for 45 seconds countdown
   useEffect(() => {
     if (questions.length > 0 && !quizFinished) {
@@ -55,18 +60,32 @@ const Game = () => {
           return prevTime - 1;
         });
       }, 1000);
+
       return () => clearInterval(countdown); // Clean up on unmount
     }
   }, [questions, quizFinished]);
+
+  // Play audio 15 seconds after the round starts
+  useEffect(() => {
+    if (!audioPlayed && time <= 30 && questions.length > 0) {
+      const audio = new Audio("countdown.mp3"); // Replace with your audio file URL or local file path
+      audio.play();
+      setAudioPlayed(true); // Ensure it plays only once
+    }
+  }, [time, audioPlayed, questions]);
+
   // Handle answer click and move to the next question
   const handleAnswerClick = (answer) => {
     if (quizFinished) return; // Prevent further answers after quiz finishes
+
     const correctAnswer = questions[currentQuestionIndex].correct_answer;
+
     if (answer === correctAnswer) {
       setCorrectCount((prev) => prev + 1); // Increment correct answers
     } else {
       setIncorrectCount((prev) => prev + 1); // Increment incorrect answers
     }
+
     const nextQuestionIndex = currentQuestionIndex + 1;
     if (nextQuestionIndex < questions.length) {
       setCurrentQuestionIndex(nextQuestionIndex);
@@ -80,34 +99,31 @@ const Game = () => {
       setQuizFinished(true); // End the quiz if all questions are answered
     }
   };
+
   if (error) {
     return <p>{error}</p>;
   }
+
   if (questions.length === 0) {
     return (
       <>
+        <h1>Choose Difficulty</h1>
         <div
           style={{
-            width: "48%",
-            margin: "5px 0",
-            padding: "10px",
-            fontSize: "24px",
-            cursor: "pointer",
+            display: "flex",
+            justifyContent: "center",
+            gap: "10px", // Space between buttons
+            margin: "20px 0", // Space between header and buttons
           }}
         >
-          <Button onClick={() => fetchQuestions(0, "easy")}>
-            Load Easy questions
-          </Button>
-          <Button onClick={() => fetchQuestions(0, "medium")}>
-            Load Medium questions
-          </Button>
-          <Button onClick={() => fetchQuestions(0, "hard")}>
-            Load Hard questions
-          </Button>
+          <Button onClick={() => fetchQuestions(0, "easy")}>Easy</Button>
+          <Button onClick={() => fetchQuestions(0, "medium")}>Medium</Button>
+          <Button onClick={() => fetchQuestions(0, "hard")}>Hard</Button>
         </div>
       </>
     );
   }
+
   if (quizFinished || time === 0) {
     // Calculate the final score based on the difficulty and correct answers
     let finalScoreMultiplier = 1; // Default for easy
@@ -116,7 +132,9 @@ const Game = () => {
     } else if (difficulty === "hard") {
       finalScoreMultiplier = 3; // Triple points for hard
     }
+
     const finalScore = correctCount * finalScoreMultiplier; // Multiply correct answers by the difficulty multiplier
+
     return (
       <div>
         <h1>Quiz Finished!</h1>
@@ -128,14 +146,18 @@ const Game = () => {
       </div>
     );
   }
+
   const currentQuestion = questions[currentQuestionIndex];
+
   return (
     <div>
       <h1>Quiz</h1>
       <h3>
         Question {currentQuestionIndex + 1} of {questions.length}:
       </h3>
+      {/* Display the question */}
       <h1 dangerouslySetInnerHTML={{ __html: currentQuestion.question }} />
+
       {/* Display the shuffled answers in two rows (2 buttons per row) */}
       <div
         style={{
@@ -158,13 +180,15 @@ const Game = () => {
               cursor: "pointer",
             }}
           >
-            {answer}
+            <span dangerouslySetInnerHTML={{ __html: answer }} />
           </Button>
         ))}
       </div>
+
       {/* Display the countdown timer */}
       <p>Time Remaining: {time} seconds</p>
     </div>
   );
 };
+
 export default Game;
