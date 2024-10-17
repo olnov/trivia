@@ -3,14 +3,19 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import Users from "./pages/Users";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Game from "./pages/Game";
 
 const router = createBrowserRouter([
   {
-    path: "/users",
-    element: <Users />,
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <Signup />,
   },
   {
     path: "/home",
