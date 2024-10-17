@@ -1,5 +1,5 @@
 import { Button } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Game = () => {
@@ -14,6 +14,9 @@ const Game = () => {
   const [quizFinished, setQuizFinished] = useState(false); // Track if the quiz has finished
   const [difficulty, setDifficulty] = useState("easy"); // Track difficulty
   const [audioPlayed, setAudioPlayed] = useState(false); // Track if audio has played
+
+  // Create a ref to store the audio element so it can be controlled
+  const audioRef = useRef(null);
 
   // Function to shuffle answers (correct and incorrect)
   const shuffleAnswers = (correctAnswer, incorrectAnswers) => {
@@ -69,10 +72,19 @@ const Game = () => {
   useEffect(() => {
     if (!audioPlayed && time <= 30 && questions.length > 0) {
       const audio = new Audio("countdown.mp3"); // Replace with your audio file URL or local file path
+      audioRef.current = audio; // Store the audio element in the ref
       audio.play();
       setAudioPlayed(true); // Ensure it plays only once
     }
   }, [time, audioPlayed, questions]);
+
+  // Stop audio when the quiz is finished
+  useEffect(() => {
+    if (quizFinished && audioRef.current) {
+      audioRef.current.pause(); // Pause the audio
+      audioRef.current.currentTime = 0; // Reset audio to the beginning
+    }
+  }, [quizFinished]);
 
   // Handle answer click and move to the next question
   const handleAnswerClick = (answer) => {
