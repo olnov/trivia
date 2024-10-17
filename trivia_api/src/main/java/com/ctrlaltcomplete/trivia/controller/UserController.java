@@ -7,7 +7,7 @@ import com.ctrlaltcomplete.trivia.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.ctrlaltcomplete.trivia.dto.AuthRequest;
 
@@ -25,6 +25,9 @@ public class UserController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -95,9 +98,9 @@ public class UserController {
         Optional<User> userOptional = userRepository.findByEmail(authRequest.getEmail());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            if (authRequest.getPassword().equals(user.getPassword())) {
+            if (passwordEncoder.matches(authRequest.getPassword(), user.getPassword())) {
                 // Generate JWT token
-                String token = jwtUtil.generateToken(user.getEmail());
+                String token = jwtUtil.generateToken(user.getEmail(), user.getId());
                 return ResponseEntity.ok(token);
             }
         }
