@@ -11,7 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.ctrlaltcomplete.trivia.dto.AuthRequest;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -94,17 +96,22 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<Map<String,String>> loginUser(@RequestBody AuthRequest authRequest) {
         Optional<User> userOptional = userRepository.findByEmail(authRequest.getEmail());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (passwordEncoder.matches(authRequest.getPassword(), user.getPassword())) {
                 // Generate JWT token
                 String token = jwtUtil.generateToken(user.getEmail(), user.getId());
-                return ResponseEntity.ok(token);
+                Map<String,String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("userId", user.getId().toString());
+                return ResponseEntity.ok(response);
             }
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        Map<String,String> errorResponse = new HashMap<>();
+        errorResponse.put("message","Invalid credentials");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
 }

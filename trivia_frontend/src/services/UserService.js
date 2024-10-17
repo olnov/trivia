@@ -16,13 +16,13 @@ export const getUsers = async ()=> {
 export const login = async (email, password)=> {
     const requestOptions = {
         method: 'POST',
-        headers: [
-            {'Content-type':'application/json'},
-        ],
+        headers: {
+            'Content-type':'application/json'
+        },
         body: JSON.stringify({email, password}),
     };
 
-    const response = await fetch(`${BACKEND}/users`, requestOptions);
+    const response = await fetch(`${BACKEND}/login`, requestOptions);
     if (response.status === 200) {
         const data = await response.json();
         return data;
@@ -34,9 +34,9 @@ export const login = async (email, password)=> {
 export const signUp = async (fullName, email, password) => {
     const requestOptions = {
         method: 'POST',
-        headers: [
-            {'Content-type':'application/json'},
-        ],
+        headers:{
+            'Content-type':'application/json'
+        },
         body: JSON.stringify({fullName, email, password}),
     };
 
