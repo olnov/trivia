@@ -11,7 +11,7 @@ public class ScoresController {
 
     @RequestMapping(value = "/topscores", method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
     public String topScores () {
-        return "{\"user1\":10}";
+        return "{\"user1\":10, \"user2\":20, \"user3\":15, \"user4\":25, \"user5\":30}";
     }
 
 }
