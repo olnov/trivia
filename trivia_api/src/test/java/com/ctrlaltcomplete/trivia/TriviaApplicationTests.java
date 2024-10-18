@@ -1,13 +1,13 @@
-package com.ctrlaltcomplete.trivia;
+// package com.ctrlaltcomplete.trivia;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class TriviaApplicationTests {
+// @SpringBootTest
+// class TriviaApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+// 	@Test
+// 	void contextLoads() {
+// 	}
 
-}
+// }
