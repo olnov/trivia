@@ -19,8 +19,7 @@ RUN npm run build
 
 # Use nginx to serve the built app
 FROM nginx:alpine
-COPY --from=build-stage /trivia_frontend/build /usr/share/nginx/html
+COPY --from=build-stage /trivia_frontend/dist /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
-
