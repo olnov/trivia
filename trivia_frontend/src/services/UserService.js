@@ -41,7 +41,7 @@ export const signUp = async (fullName, email, password) => {
     };
 
     const response = await fetch(`${BACKEND}/users`, requestOptions);
-    if (response.status === 200) {
+    if (response.status === 201) {
         return "User successfully registered";
     } else {
         throw new Error(`Error registering new user: ${response.status}`);
