@@ -52,14 +52,14 @@ const Game = () => {
     });
 
     try {
-      const response = await fetch("YOUR_BACKEND_API_URL", {
+      const response = await fetch("http://localhost:8080/topscores/new", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(scoreData),
       });
-
+      console.log(JSON.stringify(scoreData));
       if (!response.ok) {
         throw new Error("Failed to send score data to backend");
       }
