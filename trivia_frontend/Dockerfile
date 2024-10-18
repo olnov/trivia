@@ -1,5 +1,5 @@
 # Use Node.js image to build the frontend
-FROM openjdk:21-jdk-slim
+FROM node:18-alpine as build-stage
 
 # Set working directory
 WORKDIR /trivia_frontend
@@ -19,7 +19,8 @@ RUN npm run build
 
 # Use nginx to serve the built app
 FROM nginx:alpine
-COPY --from=build /trivia_frontend/build /usr/share/nginx/html
+COPY --from=build-stage /trivia_frontend/build /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
+
