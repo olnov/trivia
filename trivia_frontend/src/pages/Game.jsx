@@ -38,10 +38,10 @@ const Game = () => {
       else if (difficulty === "hard") scoreMultiplier = 3;
 
       const score = isCorrect ? scoreMultiplier : 0; // Score for each question
-
+      console.log(question)
       return {
-        player_id: playerId,
-        trivia_id: question.question, // Assuming the question text is unique as an ID, replace with actual ID if available
+        // user_id: localStorage.setItem("userId", data.userId),
+        player_id: localStorage.getItem("userId"),
         players_answer: playersAnswer,
         correct_answer: correctAnswer,
         is_correct: isCorrect,
@@ -59,7 +59,7 @@ const Game = () => {
         },
         body: JSON.stringify(scoreData),
       });
-      console.log(JSON.stringify(scoreData));
+      console.log({response});
       if (!response.ok) {
         throw new Error("Failed to send score data to backend");
       }

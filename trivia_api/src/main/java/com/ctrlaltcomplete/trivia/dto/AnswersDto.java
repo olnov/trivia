@@ -1,38 +1,31 @@
 package com.ctrlaltcomplete.trivia.dto;
 
+import java.time.LocalDateTime;
+
 public class AnswersDto {
-    private String question_id;
-    private String player_id;
-    private String trivia_id;
+    private Long question_id;
+    private Long player_id;
     private String players_answer;
     private String correct_answer;
-    private String is_correct;
+    private Boolean is_correct;
     private String difficulty;
-    private String score;
+    private Long score;
     private String answered_at;
 
-    public String getQuestion_id() {
+    public Long getQuestion_id() {
         return question_id;
     }
 
-    public void setQuestion_id(String question_id) {
+    public void setQuestion_id(Long question_id) {
         this.question_id = question_id;
     }
 
-    public String getPlayer_id() {
+    public Long getPlayer_id() {
         return player_id;
     }
 
-    public void setPlayer_id(String player_id) {
+    public void setPlayer_id(Long player_id) {
         this.player_id = player_id;
-    }
-
-    public String getTrivia_id() {
-        return trivia_id;
-    }
-
-    public void setTrivia_id(String trivia_id) {
-        this.trivia_id = trivia_id;
     }
 
     public String getPlayers_answer() {
@@ -51,11 +44,11 @@ public class AnswersDto {
         this.correct_answer = correct_answer;
     }
 
-    public String getIs_correct() {
+    public Boolean getIs_correct() {
         return is_correct;
     }
 
-    public void setIs_correct(String is_correct) {
+    public void setIs_correct(Boolean is_correct) {
         this.is_correct = is_correct;
     }
 
@@ -67,11 +60,11 @@ public class AnswersDto {
         this.difficulty = difficulty;
     }
 
-    public String getScore() {
+    public Long getScore() {
         return score;
     }
 
-    public void setScore(String score) {
+    public void setScore(Long score) {
         this.score = score;
     }
 

@@ -12,7 +12,6 @@ CREATE TABLE users (
 CREATE TABLE game_questions (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
-    trivia_id BIGINT,
     answer TEXT,
     correct_answer TEXT,
     is_correct BOOLEAN,
