@@ -1,5 +1,5 @@
 # Use Node.js image to build the frontend
-FROM node:18-alpine as build
+FROM openjdk:21-jdk-slim
 
 # Set working directory
 WORKDIR /trivia_frontend
@@ -10,6 +10,9 @@ RUN npm install
 
 # Copy the rest of the app
 COPY . .
+
+# Env vars
+ENV BACKEND_URL=$BACKEND_URL
 
 # Build the React app
 RUN npm run build
