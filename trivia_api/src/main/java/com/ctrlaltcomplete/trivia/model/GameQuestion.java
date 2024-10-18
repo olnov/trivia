@@ -32,10 +32,6 @@ public class GameQuestion {
     private LocalDateTime answeredAt;
 
     @ManyToOne
-    @JoinColumn(name = "game_id", nullable = false)
-    private Game game;
-
-    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
