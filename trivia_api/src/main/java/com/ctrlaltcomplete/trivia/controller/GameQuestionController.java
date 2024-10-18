@@ -27,7 +27,7 @@ public class GameQuestionController {
         return "OK";
     }
 
-    @GetMapping("/games")
+    @GetMapping("/topscores")
     public ResponseEntity<Map<String, Map<String,String>>> scoreBoard() {
         Map<String, Map<String, String>> response = new HashMap<>();
         Map<String,String> player1 = new HashMap<>();
