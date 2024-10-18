@@ -7,11 +7,13 @@ import com.ctrlaltcomplete.trivia.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.ctrlaltcomplete.trivia.dto.AuthRequest;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -25,6 +27,9 @@ public class UserController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -91,17 +96,22 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<Map<String,String>> loginUser(@RequestBody AuthRequest authRequest) {
         Optional<User> userOptional = userRepository.findByEmail(authRequest.getEmail());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            if (authRequest.getPassword().equals(user.getPassword())) {
+            if (passwordEncoder.matches(authRequest.getPassword(), user.getPassword())) {
                 // Generate JWT token
-                String token = jwtUtil.generateToken(user.getEmail());
-                return ResponseEntity.ok(token);
+                String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+                Map<String,String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("userId", user.getId().toString());
+                return ResponseEntity.ok(response);
             }
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        Map<String,String> errorResponse = new HashMap<>();
+        errorResponse.put("message","Invalid credentials");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
 }

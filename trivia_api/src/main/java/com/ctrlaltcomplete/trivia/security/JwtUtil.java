@@ -17,9 +17,10 @@ public class JwtUtil {
     private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);  // This generates a secure key
 
 
-    public String generateToken(String email) {
+    public String generateToken(String email, Long userId) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
