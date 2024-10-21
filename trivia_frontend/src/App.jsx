@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
@@ -9,26 +14,26 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
-import { ReactElement } from 'react';
+import { ReactElement } from "react";
+import Profile from "./pages/Profile";
 
 const isAuthenticated = () => {
-  const token = localStorage.getItem('token'); // Assume JWT token is stored in localStorage
+  const token = localStorage.getItem("token"); // Assume JWT token is stored in localStorage
   if (token) {
-      try {
-          const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload
-          const currentTime = Date.now() / 1000; // Get current time in seconds
-          return payload.exp > currentTime; // Check if token is expired
-      } catch (error) {
-          return false;
-      }
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
+      const currentTime = Date.now() / 1000; // Get current time in seconds
+      return payload.exp > currentTime; // Check if token is expired
+    } catch (error) {
+      return false;
+    }
   }
   return false;
 };
 
-const ProtectedRoute = ({element}) => {
+const ProtectedRoute = ({ element }) => {
   return isAuthenticated() ? element : <Navigate to="/login" />;
 };
-
 
 // Layout component that includes the Navbar
 const Layout = () => (
@@ -62,9 +67,13 @@ const router = createBrowserRouter([
         path: "/leaderboard",
         element: <ProtectedRoute element={<Leaderboard />} />,
       },
+      {
+        path: "/profile",
+        element: <ProtectedRoute element={<Profile />} />,
+      },
     ],
   },
- ]);
+]);
 
 function App() {
   return (
