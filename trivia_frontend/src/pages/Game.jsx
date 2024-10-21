@@ -1,4 +1,4 @@
-import { Button } from "@chakra-ui/react";
+import { Button, Text } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -197,7 +197,7 @@ const Game = () => {
     const finalScore = correctCount * finalScoreMultiplier;
 
     return (
-      <div>
+      <div className="content-container quiz">
         <h1>Quiz Finished!</h1>
         <p>Correct Answers: {correctCount}</p>
         <p>Incorrect Answers: {incorrectCount}</p>
@@ -211,12 +211,16 @@ const Game = () => {
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div>
+    <div className="content-container quiz">
       <h1>Quiz</h1>
       <h3>
         Question {currentQuestionIndex + 1} of {questions.length}:
       </h3>
-      <h1 dangerouslySetInnerHTML={{ __html: currentQuestion.question }} />
+      {/* Display the question */}
+      <Text
+        fontSize={24}
+        dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
+      />
 
       <div
         style={{
