@@ -14,8 +14,8 @@ const Home = () => {
     navigate("/leaderboard");
   };
   return (
-    <>
-      <Box>
+        <Button onClick={handleClick}>Begin</Button>&nbsp;
+        <Button>Leaderboard</Button>
         <Text fontSize={32}>Welcome young quizzard!</Text>
         <Box width={400}>
           Well done on logging in and creating your profile! When ready, click
@@ -38,7 +38,7 @@ const Home = () => {
           <Button onClick={handleLeaderboardClick}>Leaderboard</Button>
         </Box>
       </Box>
-    </>
+    </Box>
   );
 };
 
