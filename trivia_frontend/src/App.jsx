@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
@@ -8,6 +8,26 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
+import { ReactElement } from 'react';
+
+const isAuthenticated = () => {
+  const token = localStorage.getItem('token'); // Assume JWT token is stored in localStorage
+  if (token) {
+      try {
+          const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload
+          const currentTime = Date.now() / 1000; // Get current time in seconds
+          return payload.exp > currentTime; // Check if token is expired
+      } catch (error) {
+          return false;
+      }
+  }
+  return false;
+};
+
+const ProtectedRoute = ({element}) => {
+  return isAuthenticated() ? element : <Navigate to="/login" />;
+};
+
 
 const router = createBrowserRouter([
   {
@@ -20,21 +40,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/home",
-    element: <Home />,
+    element: <ProtectedRoute element={<Home />} />,
   },
   {
     path: "/game",
-    element: <Game />,
+    element: <ProtectedRoute element={<Game />} />,
   },
   {
     path: "/leaderboard",
-    element: <Leaderboard />,
+    element: <ProtectedRoute element={<Leaderboard />} />,
   },
 ]);
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <RouterProvider router={router} />
