@@ -7,7 +7,8 @@ const Game = () => {
   const [error, setError] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState([]);
+  // const [answers, setAnswers] = useState([]);
+  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
   const [time, setTime] = useState(45); // Countdown timer (45 seconds)
   const [correctCount, setCorrectCount] = useState(0); // Track correct answers
   const [incorrectCount, setIncorrectCount] = useState(0); // Track incorrect answers
@@ -18,6 +19,19 @@ const Game = () => {
   // Create a ref to store the audio element so it can be controlled
   const audioRef = useRef(null);
 
+  // Update answers whenever the currentQuestionIndex changes
+  useEffect(() => {
+    if (questions.length > 0) {
+      const currentQuestion = questions[currentQuestionIndex];
+      setAnswers(
+        shuffleAnswers(
+          currentQuestion.correct_answer,
+          currentQuestion.incorrect_answers
+        )
+      );
+    }
+  }, [currentQuestionIndex, questions]);
+
   // Function to shuffle answers (correct and incorrect)
   const shuffleAnswers = (correctAnswer, incorrectAnswers) => {
     const allAnswers = [...incorrectAnswers, correctAnswer];
@@ -25,7 +39,7 @@ const Game = () => {
   };
 
   const sendScoreToBackend = async () => {
-    const playerId = "CurrentSessionId"; // Replace with actual session ID retrieval logic
+    // const playerId = "CurrentSessionId"; // Replace with actual session ID retrieval logic
     const timestamp = new Date().toISOString(); // Local timestamp
 
     const scoreData = questions.map((question, index) => {
@@ -38,7 +52,7 @@ const Game = () => {
       else if (difficulty === "hard") scoreMultiplier = 3;
 
       const score = isCorrect ? scoreMultiplier : 0; // Score for each question
-      console.log(question)
+      console.log(question);
       return {
         // user_id: localStorage.setItem("userId", data.userId),
         player_id: localStorage.getItem("userId"),
@@ -59,7 +73,7 @@ const Game = () => {
         },
         body: JSON.stringify(scoreData),
       });
-      console.log({response});
+      console.log({ response });
       if (!response.ok) {
         throw new Error("Failed to send score data to backend");
       }
@@ -104,12 +118,13 @@ const Game = () => {
         setTime((prevTime) => {
           if (prevTime <= 1) {
             clearInterval(countdown); // Stop the countdown at 0
+
             setQuizFinished(true); // End the quiz when time is up
+            sendScoreToBackend();
           }
           return prevTime - 1;
         });
       }, 1000);
-
       return () => clearInterval(countdown); // Clean up on unmount
     }
   }, [questions, quizFinished]);
@@ -117,7 +132,7 @@ const Game = () => {
   // Play audio 15 seconds after the round starts
   useEffect(() => {
     if (!audioPlayed && time <= 30 && questions.length > 0) {
-      const audio = new Audio("countdown.mp3"); // Replace with your audio file URL or local file path
+      const audio = new Audio("countdown.mp377as7dfas"); // Replace with your audio file URL or local file path
       audioRef.current = audio; // Store the audio element in the ref
       audio.play();
       setAudioPlayed(true); // Ensure it plays only once
@@ -132,30 +147,33 @@ const Game = () => {
     }
   }, [quizFinished]);
 
-  // Handle answer click and move to the next question
   const handleAnswerClick = (answer) => {
     if (quizFinished) return; // Prevent further answers after quiz finishes
 
-    const correctAnswer = questions[currentQuestionIndex].correct_answer;
+    // Store the player's answer for the current question
+    setAnswers((prevAnswers) => {
+      const newAnswers = [...prevAnswers];
+      newAnswers[currentQuestionIndex] = answer; // Store the answer for the current question
+      return newAnswers;
+    });
 
-    if (answer === correctAnswer) {
+    // Compare the player's answer with the correct answer
+    const correctAnswer = questions[currentQuestionIndex].correct_answer;
+    const playerAnswer = answer;
+
+    if (playerAnswer === correctAnswer) {
       setCorrectCount((prev) => prev + 1); // Increment correct answers
     } else {
       setIncorrectCount((prev) => prev + 1); // Increment incorrect answers
     }
 
+    // Move to the next question
     const nextQuestionIndex = currentQuestionIndex + 1;
     if (nextQuestionIndex < questions.length) {
-      setCurrentQuestionIndex(nextQuestionIndex);
-      setAnswers(
-        shuffleAnswers(
-          questions[nextQuestionIndex].correct_answer,
-          questions[nextQuestionIndex].incorrect_answers
-        )
-      );
+      setCurrentQuestionIndex(nextQuestionIndex); // Update to next question
     } else {
-      setQuizFinished(true); // End the quiz if all questions are answered
-      sendScoreToBackend();
+      setQuizFinished(true); // End the quiz when all questions are answered
+      sendScoreToBackend(); // Send the score to backend once quiz is finished
     }
   };
 
