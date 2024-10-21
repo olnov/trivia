@@ -14,7 +14,9 @@ const Home = () => {
     navigate("/leaderboard");
   };
   return (
-        <Button onClick={handleClick}>Begin</Button>&nbsp;
+    <Box>
+        <Box>
+        <Button onClick={handleClick}>Begin</Button>
         <Button>Leaderboard</Button>
         <Text fontSize={32}>Welcome young quizzard!</Text>
         <Box width={400}>
