@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Center, Text } from "@chakra-ui/react";
+import { Button, ButtonGroup, Center, Text, Container } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,11 +13,12 @@ const Home = () => {
     navigate("/leaderboard");
   };
   return (
-    <Box>
+    <>
+    <br></br>
+    <Center>
+    <Box boxShadow='base' p='6' rounded='md'>
         <Box>
-        <Button onClick={handleClick}>Begin</Button>
-        <Button>Leaderboard</Button>
-        <Text fontSize={32}>Welcome young quizzard!</Text>
+        <Text fontSize={32} centerContent>Welcome young quizzard!</Text>
         <Box width={400}>
           Well done on logging in and creating your profile! When ready, click
           Begin to start your journey and become a quizzard. Alternatively, see
@@ -26,20 +27,26 @@ const Home = () => {
         <Box>
           <span>
             <br></br>
-            <Text fontSize={24}>Points per answer</Text>
+            <Container centerContent>
+            <Text fontSize={24} centerContent>Points per answer</Text>
             <ul>
               <li>Easy = 1 point</li>
               <li>Medium = 2 points</li>
               <li>Hard = 3 points</li>
             </ul>
+            </Container>
           </span>
         </Box>
-        <Box>
-          <Button onClick={handleClick}>Begin</Button>&nbsp;
+        <br></br>
+        <Container centerContent>
+          <Button onClick={handleClick}>Begin</Button>
+          <br></br>
           <Button onClick={handleLeaderboardClick}>Leaderboard</Button>
-        </Box>
+        </Container>
       </Box>
     </Box>
+    </Center>
+    </>
   );
 };
 

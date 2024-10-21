@@ -9,7 +9,6 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
-import { ReactElement } from 'react';
 
 const isAuthenticated = () => {
   const token = localStorage.getItem('token'); // Assume JWT token is stored in localStorage
@@ -44,27 +43,28 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/login",
-        element: <Login />,
+        element: <Login />,  
       },
       {
         path: "/signup",
-        element: <Signup />,
+        element: <Signup />, 
       },
       {
         path: "/home",
-        element: <ProtectedRoute element={<Home />} />,
+        element: <ProtectedRoute element={<Home />} />,  
       },
       {
         path: "/game",
-        element: <ProtectedRoute element={<Game />} />,
+        element: <ProtectedRoute element={<Game />} />,  
       },
       {
         path: "/leaderboard",
-        element: <ProtectedRoute element={<Leaderboard />} />,
+        element: <ProtectedRoute element={<Leaderboard />} />,  
       },
     ],
   },
- ]);
+]);
+
 
 function App() {
   return (

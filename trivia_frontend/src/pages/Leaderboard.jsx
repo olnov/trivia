@@ -1,4 +1,15 @@
-import { Button } from "@chakra-ui/react";
+import { Box, Button, Text, Card, CardBody, Center } from "@chakra-ui/react";
+import {
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+} from '@chakra-ui/react'
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,12 +26,11 @@ const Leaderboard = () => {
         throw new Error("Failed to fetch leaderboard data");
       }
       const data = await response.json();
-      //   console.log({ data });
-
       // Convert response object to array
-      const leaderboardArray = Object.entries(data);
+      // const leaderboardArray = Object.entries(data);
+      const leaderboardArray = data;
       setLeaderboardState(leaderboardArray);
-      //   console.log(leaderboardArray);
+      console.log("Array is: ", JSON.stringify(leaderboardArray));
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       setError(error.message); // Set error message
@@ -34,25 +44,37 @@ const Leaderboard = () => {
   }, []);
 
   return (
-    <div>
-      <h1>Leaderboard</h1>
+    <>
       {loading ? (
-        <p>Loading...</p>
+        <Text>Loading...</Text>
       ) : error ? (
-        <p>Error: {error}</p>
+        <Text>Error: {error} </Text>
       ) : (
-        <ul>
-          {leaderboardState.map((item, index) => (
-            <li key={index}>
-              {item[0]}: {item[1]}
-            </li>
-          ))}
-          {/* {leaderboardState} */}
-        </ul>
+        <>
+          <Center>
+            <Box w='50%' p={4} textAlign={"center"}>
+              <Text textAlign={"center"} fontSize={"xl"}>Leaderboard</Text>
+              <TableContainer>
+                <Table variant='striped' colorScheme='blue' size='sm'>
+                  <Tbody>
+                    {leaderboardState.map((item) => (
+                      <Tr key={item.userId}>
+                        <Td>{item.fullName}</Td>
+                        <Td>{item.totalScore}</Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+              <br></br>
+              <Button onClick={() => navigate("/home")}>Home</Button>
+            </Box>
+          </Center>
+        </>
       )}
-      <Button onClick={() => navigate("/home")}>Home</Button>
-    </div>
+    </>
   );
+
 };
 
 export default Leaderboard;
