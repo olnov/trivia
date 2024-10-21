@@ -59,6 +59,10 @@ export default function Nav() {
     navigate("/login");
   };
 
+  const handleProfileView = () => {
+    navigate("/profile");
+  };
+
   return (
     <>
       <Box
@@ -118,7 +122,9 @@ export default function Nav() {
                   <br />
                   <MenuDivider />
                   <MenuItem>Your Games</MenuItem>
-                  <MenuItem>Account Settings</MenuItem>
+                  <MenuItem onClick={handleProfileView}>
+                    Account Settings
+                  </MenuItem>
                   <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 </MenuList>
               </Menu>

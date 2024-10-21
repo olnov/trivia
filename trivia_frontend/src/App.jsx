@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
+import Profile from "./pages/Profile";
 
 // Layout component that includes the Navbar
 const Layout = () => (
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "/game",
         element: <Game />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
       },
     ],
   },
