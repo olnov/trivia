@@ -7,8 +7,8 @@ const Game = () => {
   const [error, setError] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  // const [answers, setAnswers] = useState([]);
-  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
+  const [playerAnswers, setPlayerAnswers] = useState([]); // Track player's answers for all questions
+  const [shuffledAnswers, setShuffledAnswers] = useState([]); // Store shuffled answers for the current question
   const [time, setTime] = useState(45); // Countdown timer (45 seconds)
   const [correctCount, setCorrectCount] = useState(0); // Track correct answers
   const [incorrectCount, setIncorrectCount] = useState(0); // Track incorrect answers
@@ -16,79 +16,84 @@ const Game = () => {
   const [difficulty, setDifficulty] = useState("easy"); // Track difficulty
   const [audioPlayed, setAudioPlayed] = useState(false); // Track if audio has played
 
-  // Create a ref to store the audio element so it can be controlled
   const audioRef = useRef(null);
 
-  // Update answers whenever the currentQuestionIndex changes
+  // Shuffle the answers for the current question when the question changes
   useEffect(() => {
-    if (questions.length > 0) {
+    if (questions.length > 0 && currentQuestionIndex < questions.length) {
       const currentQuestion = questions[currentQuestionIndex];
-      setAnswers(
-        shuffleAnswers(
-          currentQuestion.correct_answer,
-          currentQuestion.incorrect_answers
-        )
+      const shuffled = shuffleAnswers(
+        currentQuestion.correct_answer,
+        currentQuestion.incorrect_answers
       );
+      setShuffledAnswers(shuffled); // Store shuffled answers for the current question
     }
   }, [currentQuestionIndex, questions]);
 
-  // Function to shuffle answers (correct and incorrect)
+  // Shuffle the answers once per question
   const shuffleAnswers = (correctAnswer, incorrectAnswers) => {
     const allAnswers = [...incorrectAnswers, correctAnswer];
     return allAnswers.sort(() => Math.random() - 0.5);
   };
 
-  const sendScoreToBackend = async () => {
-    // const playerId = "CurrentSessionId"; // Replace with actual session ID retrieval logic
-    const timestamp = new Date().toISOString(); // Local timestamp
+  // Utility function to decode HTML entities
+const decodeHTMLEntities = (text) => {
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = text;
+  return textarea.value;
+};
 
-    console.log("Questions: ", questions);
-    const scoreData = questions.map((question, index) => {
-      const playersAnswer = answers[index]; // What the player answered
-      console.log("Player's answer:", playersAnswer);
-      const correctAnswer = question.correct_answer; // Correct answer from the trivia
-      console.log("The correct answer is:", correctAnswer);
-      const isCorrect = playersAnswer === correctAnswer || false; // Check if the player's answer is correct
-      let scoreMultiplier = 1;
+// Modified sendScoreToBackend to ensure correct state capture
+const sendScoreToBackend = async () => {
+  const timestamp = new Date().toISOString();
 
-      if (difficulty === "medium") scoreMultiplier = 2;
-      else if (difficulty === "hard") scoreMultiplier = 3;
+  // Ensure that we map over the latest answers after all questions are completed
+  const scoreData = questions.map((question, index) => {
+    const playersAnswer = playerAnswers[index] || ""; // Get player's answer for this question
+    const correctAnswer = decodeHTMLEntities(question.correct_answer); // Decode HTML entities
 
-      const score = isCorrect ? scoreMultiplier : 0; // Score for each question
+    // Handle case where player didn't select any answer
+    const isCorrect =
+      playersAnswer.trim() !== "" &&
+      playersAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
 
-      return {
-        // user_id: localStorage.setItem("userId", data.userId),
-        player_id: localStorage.getItem("userId"),
-        players_answer: playersAnswer,
-        correct_answer: correctAnswer,
-        is_correct: isCorrect,
-        difficulty: difficulty,
-        score: score,
-        answered_at: timestamp,
-      };
+    let scoreMultiplier = 1;
+    if (difficulty === "medium") scoreMultiplier = 2;
+    if (difficulty === "hard") scoreMultiplier = 3;
+
+    const score = isCorrect ? scoreMultiplier : 0;
+
+    return {
+      player_id: localStorage.getItem("userId"),
+      players_answer: playersAnswer || "No Answer", // Default to "No Answer" if the player didn't answer
+      correct_answer: correctAnswer,
+      is_correct: isCorrect,
+      difficulty: difficulty,
+      score: score,
+      answered_at: timestamp,
+    };
+  });
+
+  console.log("Payload being sent to backend:", scoreData);
+
+  try {
+    const response = await fetch("http://localhost:8080/topscores/new", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(scoreData),
     });
 
-    console.log("Playload from FE:");
-    console.log(scoreData);
-
-    try {
-      const response = await fetch("http://localhost:8080/topscores/new", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(scoreData),
-      });
-      console.log({ response });
-      if (!response.ok) {
-        throw new Error("Failed to send score data to backend");
-      }
-
-      console.log("Score data successfully sent to backend");
-    } catch (error) {
-      console.error("Error sending score data:", error);
+    if (!response.ok) {
+      throw new Error("Failed to send score data to backend");
     }
-  };
+
+    console.log("Score data successfully sent to backend");
+  } catch (error) {
+    console.error("Error sending score data:", error);
+  }
+};  
 
   const fetchQuestions = async (retryCount = 0, selectedDifficulty) => {
     try {
@@ -103,14 +108,10 @@ const Game = () => {
         }
       }
       const data = await response.json();
-      setDifficulty(selectedDifficulty); // Set the difficulty for final score calculation
+      setDifficulty(selectedDifficulty);
       setQuestions(data.results);
-      setAnswers(
-        shuffleAnswers(
-          data.results[0].correct_answer,
-          data.results[0].incorrect_answers
-        )
-      );
+      setCurrentQuestionIndex(0); // Start from the first question
+      setPlayerAnswers(Array(data.results.length).fill(null)); // Reset player's answers
     } catch (err) {
       setError(err.message || "Failed to fetch questions.");
       console.error(err);
@@ -123,65 +124,65 @@ const Game = () => {
       const countdown = setInterval(() => {
         setTime((prevTime) => {
           if (prevTime <= 1) {
-            clearInterval(countdown); // Stop the countdown at 0
-
-            setQuizFinished(true); // End the quiz when time is up
+            clearInterval(countdown); // Stop countdown at 0
+            setQuizFinished(true);
             sendScoreToBackend();
           }
           return prevTime - 1;
         });
       }, 1000);
-      return () => clearInterval(countdown); // Clean up on unmount
+      return () => clearInterval(countdown);
     }
   }, [questions, quizFinished]);
 
   // Play audio 15 seconds after the round starts
   useEffect(() => {
     if (!audioPlayed && time <= 30 && questions.length > 0) {
-      const audio = new Audio("countdown.mp377as7dfas"); // Replace with your audio file URL or local file path
-      audioRef.current = audio; // Store the audio element in the ref
+      const audio = new Audio("countdown.mp377as7dfas"); // Replace with your audio file URL
+      audioRef.current = audio;
       audio.play();
-      setAudioPlayed(true); // Ensure it plays only once
+      setAudioPlayed(true);
     }
   }, [time, audioPlayed, questions]);
 
   // Stop audio when the quiz is finished
   useEffect(() => {
     if (quizFinished && audioRef.current) {
-      audioRef.current.pause(); // Pause the audio
-      audioRef.current.currentTime = 0; // Reset audio to the beginning
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
   }, [quizFinished]);
 
   const handleAnswerClick = (answer) => {
-    if (quizFinished) return; // Prevent further answers after quiz finishes
-
-    // Store the player's answer for the current question
-    setAnswers((prevAnswers) => {
+    if (quizFinished) return;
+  
+    // Update player's answer for the current question
+    setPlayerAnswers((prevAnswers) => {
       const newAnswers = [...prevAnswers];
-      newAnswers[currentQuestionIndex] = answer; // Store the answer for the current question
+      newAnswers[currentQuestionIndex] = answer; // Store player's answer for the current question
       return newAnswers;
     });
-
+  
     // Compare the player's answer with the correct answer
-    const correctAnswer = questions[currentQuestionIndex].correct_answer;
-    const playerAnswer = answer;
-
-    if (playerAnswer === correctAnswer) {
+    const correctAnswer = decodeHTMLEntities(questions[currentQuestionIndex].correct_answer); // Decode HTML entities
+  
+    if (answer.trim().toLowerCase() === correctAnswer.trim().toLowerCase()) {
       setCorrectCount((prev) => prev + 1); // Increment correct answers
     } else {
       setIncorrectCount((prev) => prev + 1); // Increment incorrect answers
     }
-
-    // Move to the next question
+  
+    // Move to the next question or finish the quiz
     const nextQuestionIndex = currentQuestionIndex + 1;
     if (nextQuestionIndex < questions.length) {
       setCurrentQuestionIndex(nextQuestionIndex); // Update to next question
     } else {
-      setQuizFinished(true); // End the quiz when all questions are answered
-      sendScoreToBackend(); // Send the score to backend once quiz is finished
+      // If it's the last question, ensure all state updates are applied before sending to backend
+      setQuizFinished(true);
+      sendScoreToBackend(); // Send the score to the backend
     }
   };
+  
 
   if (error) {
     return <p>{error}</p>;
@@ -191,14 +192,7 @@ const Game = () => {
     return (
       <>
         <h1>Choose Difficulty</h1>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "10px", // Space between buttons
-            margin: "20px 0", // Space between header and buttons
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px", margin: "20px 0" }}>
           <Button onClick={() => fetchQuestions(0, "easy")}>Easy</Button>
           <Button onClick={() => fetchQuestions(0, "medium")}>Medium</Button>
           <Button onClick={() => fetchQuestions(0, "hard")}>Hard</Button>
@@ -208,15 +202,11 @@ const Game = () => {
   }
 
   if (quizFinished || time === 0) {
-    // Calculate the final score based on the difficulty and correct answers
-    let finalScoreMultiplier = 1; // Default for easy
-    if (difficulty === "medium") {
-      finalScoreMultiplier = 2; // Double points for medium
-    } else if (difficulty === "hard") {
-      finalScoreMultiplier = 3; // Triple points for hard
-    }
+    let finalScoreMultiplier = 1;
+    if (difficulty === "medium") finalScoreMultiplier = 2;
+    if (difficulty === "hard") finalScoreMultiplier = 3;
 
-    const finalScore = correctCount * finalScoreMultiplier; // Multiply correct answers by the difficulty multiplier
+    const finalScore = correctCount * finalScoreMultiplier;
 
     return (
       <div>
@@ -235,42 +225,18 @@ const Game = () => {
   return (
     <div>
       <h1>Quiz</h1>
-      <h3>
-        Question {currentQuestionIndex + 1} of {questions.length}:
-      </h3>
-      {/* Display the question */}
+      <h3>Question {currentQuestionIndex + 1} of {questions.length}:</h3>
       <h1 dangerouslySetInnerHTML={{ __html: currentQuestion.question }} />
 
-      {/* Display the shuffled answers in two rows (2 buttons per row) */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-          maxWidth: "900px",
-          margin: "20px auto",
-        }}
-      >
-        {answers.map((answer, index) => (
-          <Button
-            key={index}
-            onClick={() => handleAnswerClick(answer)}
-            style={{
-              width: "48%",
-              margin: "5px 0",
-              padding: "10px",
-              fontSize: "24px",
-              cursor: "pointer",
-            }}
-          >
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", maxWidth: "900px", margin: "20px auto" }}>
+        {shuffledAnswers.map((answer, index) => (
+          <Button key={index} onClick={() => handleAnswerClick(answer)} style={{ width: "48%", margin: "5px 0", padding: "10px", fontSize: "24px", cursor: "pointer" }}>
             <span dangerouslySetInnerHTML={{ __html: answer }} />
           </Button>
         ))}
       </div>
 
-      {/* Display the countdown timer */}
       <p>Time Remaining: {time} seconds</p>
-      {/* <Button onClick={() => navigate("/home")}>Exit</Button> */}
     </div>
   );
 };
