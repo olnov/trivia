@@ -28,17 +28,20 @@ const Game = () => {
     const playerId = "CurrentSessionId"; // Replace with actual session ID retrieval logic
     const timestamp = new Date().toISOString(); // Local timestamp
 
+    console.log("Questions: ", questions);  
     const scoreData = questions.map((question, index) => {
       const playersAnswer = answers[index]; // What the player answered
+      console.log("Player's answer:", playersAnswer);
       const correctAnswer = question.correct_answer; // Correct answer from the trivia
-      const isCorrect = playersAnswer === correctAnswer; // Check if the player's answer is correct
+      console.log("The correct answer is:", correctAnswer);
+      const isCorrect = playersAnswer === correctAnswer || false; // Check if the player's answer is correct
       let scoreMultiplier = 1;
 
       if (difficulty === "medium") scoreMultiplier = 2;
       else if (difficulty === "hard") scoreMultiplier = 3;
 
       const score = isCorrect ? scoreMultiplier : 0; // Score for each question
-      console.log(question)
+      
       return {
         // user_id: localStorage.setItem("userId", data.userId),
         player_id: localStorage.getItem("userId"),
@@ -50,6 +53,9 @@ const Game = () => {
         answered_at: timestamp,
       };
     });
+
+    console.log("Playload from FE:")
+    console.log(scoreData)
 
     try {
       const response = await fetch("http://localhost:8080/topscores/new", {
