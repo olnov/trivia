@@ -1,4 +1,4 @@
-import { Button } from "@chakra-ui/react";
+import { Button, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -101,35 +101,25 @@ const Game = () => {
   if (questions.length === 0) {
     // return <p>Loading questions...</p>;
     return (
-      <>
-        <div
-          style={{
-            width: "48%", // 48% width for 2 buttons per row
-            margin: "5px 0",
-            padding: "10px",
-            fontSize: "24px",
-            cursor: "pointer",
-          }}
-        >
-          <Button onClick={() => fetchQuestions(0, "easy")}>
-            Load Easy questions
-          </Button>
+      <div className="content-container load-quiz">
+        <Button onClick={() => fetchQuestions(0, "easy")}>
+          Load Easy questions
+        </Button>
 
-          <Button onClick={() => fetchQuestions(0, "medium")}>
-            Load Medium questions
-          </Button>
+        <Button onClick={() => fetchQuestions(0, "medium")}>
+          Load Medium questions
+        </Button>
 
-          <Button onClick={() => fetchQuestions(0, "hard")}>
-            Load Hard questions
-          </Button>
-        </div>
-      </>
+        <Button onClick={() => fetchQuestions(0, "hard")}>
+          Load Hard questions
+        </Button>
+      </div>
     );
   }
 
   if (quizFinished || time === 0) {
     return (
-      <div>
+      <div className="content-container quiz">
         <h1>Quiz Finished!</h1>
         <p>Correct Answers: {correctCount}</p>
         <p>Incorrect Answers: {incorrectCount}</p>
@@ -142,13 +132,16 @@ const Game = () => {
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div>
+    <div className="content-container quiz">
       <h1>Quiz</h1>
       <h3>
         Question {currentQuestionIndex + 1} of {questions.length}:
       </h3>
       {/* Display the question */}
-      <h1 dangerouslySetInnerHTML={{ __html: currentQuestion.question }} />
+      <Text
+        fontSize={24}
+        dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
+      />
 
       {/* Display the shuffled answers in two rows (2 buttons per row) */}
       <div

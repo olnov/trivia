@@ -7,23 +7,23 @@ const Home = () => {
 
   const handleClick = () => {
     navigate("/game");
-    fetchQuestions();
+    // fetchQuestions();
   };
   return (
-    <>
+    // <>
+    <Box className="home">
+      <Text fontSize={32}>Welcome yound quizzard!</Text>
+      <Text>
+        Well done on ligging in and creating your profile! When ready, cleck
+        begin to start your journey and become quizzard. Alternatively, see your
+        score on the Leaderboard. Stay tuned for new changes soon!
+      </Text>
       <Box>
-        <Text fontSize={32}>Welcome yound quizzard!</Text>
-        <Box width={400}>
-          Well done on ligging in and creating your profile! When ready, cleck
-          begin to start your journey and become quizzard. Alternatively, see
-          your score on the Leaderboard. Stay tuned for new changes soon!
-        </Box>
-        <Box>
-          <Button onClick={handleClick}>Begin</Button>&nbsp;
-          <Button>Leaderboard</Button>
-        </Box>
+        <Button onClick={handleClick}>Begin</Button>&nbsp;
+        <Button>Leaderboard</Button>
       </Box>
-    </>
+    </Box>
+    // </>
   );
 };
 
