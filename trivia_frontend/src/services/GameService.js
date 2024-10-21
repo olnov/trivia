@@ -5,8 +5,9 @@ export const fetchQuestions = async (retryCount = 0, difficulty) => {
     );
     if (!response.ok) {
       if (retryCount < 3) {
-        console.log(`Retrying fetch: Attempt ${retryCount + 1}`);
+        // console.log(`Retrying fetch: Attempt ${retryCount + 1}`);
         //   return fetchQuestions(retryCount + 1); // Retry fetching questions
+        console.log("");
       } else {
         throw new Error("Failed to fetch questions after multiple attempts.");
       }
