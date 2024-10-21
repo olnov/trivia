@@ -8,6 +8,7 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
+import { ReactElement } from 'react';
 
 const isAuthenticated = () => {
   const token = localStorage.getItem('token'); // Assume JWT token is stored in localStorage
@@ -23,7 +24,7 @@ const isAuthenticated = () => {
   return false;
 };
 
-const ProtectedRoute = ({ element }) => {
+const ProtectedRoute = ({element}) => {
   return isAuthenticated() ? element : <Navigate to="/login" />;
 };
 
@@ -39,21 +40,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/home",
-    element: <ProtectedRoute route={Home} />,
+    element: <ProtectedRoute element={<Home />} />,
   },
   {
     path: "/game",
-    element: <ProtectedRoute route={Game} />,
+    element: <ProtectedRoute element={<Game />} />,
   },
   {
     path: "/leaderboard",
-    element: <ProtectedRoute route={Leaderboard} />,
+    element: <ProtectedRoute element={<Leaderboard />} />,
   },
 ]);
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <RouterProvider router={router} />
