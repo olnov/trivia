@@ -7,7 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-//@SpringBootTest
 public class GameQuestionTests {
 
     private static GameQuestion testGameQuestion;
@@ -21,19 +20,6 @@ public class GameQuestionTests {
         testGameQuestion.setIsCorrect(Boolean.TRUE);
         testGameQuestion.setScore(2L);
     }
-
-
-//    CREATE TABLE game_questions (
-//            id BIGSERIAL PRIMARY KEY,
-//            user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
-//    answer TEXT,
-//    correct_answer TEXT,
-//    is_correct BOOLEAN,
-//    difficulty TEXT,
-//    score BIGINT,
-//    answered_at TIMESTAMP DEFAULT NOW()
-
-
 
     @Test
     public void GameQuestionCreated() {
