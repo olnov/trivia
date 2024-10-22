@@ -2,10 +2,10 @@
 FROM openjdk:21-jdk-slim
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /trivia_api
 
 # Copy the built JAR into the container
-COPY target/your-java-app.jar /app/your-java-app.jar
+COPY build/libs/trivia-0.0.1-SNAPSHOT-plain.jar /trivia_api/your-java-app.jar
 
 # Expose port 8080
 EXPOSE 8080
