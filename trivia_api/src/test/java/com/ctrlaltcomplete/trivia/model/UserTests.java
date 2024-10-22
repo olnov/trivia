@@ -1,8 +1,11 @@
 package com.ctrlaltcomplete.trivia.model;
 
+import com.ctrlaltcomplete.trivia.repository.UserRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
@@ -11,19 +14,15 @@ import java.time.LocalDateTime;
 public class UserTests {
 
     private static User testUser;
-//    private static LocalDateTime now;
-    private static LocalDateTime now = LocalDateTime.now();
-
 
     @BeforeAll
     public static void setUp() {
         testUser = new User();
+        testUser.onCreate();
         testUser.setId(1L);
         testUser.setPassword("password");
         testUser.setEmail("email@mail.com");
         testUser.setFullName("full name");
-//        LocalDateTime now = LocalDateTime.now();
-        testUser.setRegisteredAt(now);
     }
 
      @Test
@@ -32,6 +31,6 @@ public class UserTests {
          assertEquals(testUser.getPassword(), "password");
          assertEquals(testUser.getEmail(), "email@mail.com");
          assertEquals(testUser.getFullName(), "full name");
-         assertEquals(testUser.getRegisteredAt(), now);
+         assertNotNull(testUser.getRegisteredAt());
      }
  }
