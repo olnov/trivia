@@ -22,4 +22,7 @@ FROM nginx:alpine
 COPY --from=build-stage /trivia_frontend/dist /usr/share/nginx/html
 
 # Expose port 80
-EXPOSE 80
+EXPOSE 4173
+
+# Run the React app
+RUN npm run preview
