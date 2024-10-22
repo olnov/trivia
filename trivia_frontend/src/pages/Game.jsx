@@ -2,6 +2,8 @@ import { Button, Text } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
+import "dotenv/config";
+
 const Game = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
@@ -61,7 +63,7 @@ const Game = () => {
     });
 
     try {
-      const response = await fetch("http://localhost:8080/topscores/new", {
+      const response = await fetch(`${BACKEND_URL}/topscores/new`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,22 +101,6 @@ const Game = () => {
       console.error(err);
     }
   };
-
-  // useEffect(() => {
-  //   if (questions.length > 0 && !quizFinished) {
-  //     const countdown = setInterval(() => {
-  //       setTime((prevTime) => {
-  //         if (prevTime <= 1) {
-  //           clearInterval(countdown);
-  //           setQuizFinished(true);
-  //           sendScoreToBackend();
-  //         }
-  //         return prevTime - 1;
-  //       });
-  //     }, 1000);
-  //     return () => clearInterval(countdown);
-  //   }
-  // }, [questions, quizFinished]);
 
   const handleAnswerClick = (answer) => {
     if (quizFinished) return; // Prevent further answers if quiz is finished
@@ -197,7 +183,6 @@ const Game = () => {
     const finalScore = correctCount * finalScoreMultiplier;
 
     return (
-      <div className="content-container quiz">
       <div className="content-container quiz">
         <h1>Quiz Finished!</h1>
         <p>Correct Answers: {correctCount}</p>
