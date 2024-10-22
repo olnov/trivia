@@ -53,7 +53,7 @@ const Leaderboard = () => {
         <>
           <Center>
             <Box w='50%' p={4} textAlign={"center"}>
-              <Text textAlign={"center"} fontSize={"xl"}>Leaderboard</Text>
+              <Text textAlign={"center"} fontSize={"xl"}>Quizzard Top 10</Text>
               <TableContainer>
                 <Table variant='striped' colorScheme='blue' size='sm'>
                   <Tbody>

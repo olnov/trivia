@@ -49,9 +49,9 @@ const Login = () => {
                         </CardHeader>
                         <CardBody>
                             <FormControl>
-                                <FormLabel>Email address</FormLabel>
+                                <FormLabel htmlFor="email">Email address</FormLabel>
                                 <Input type='email' name={'email'} id={'email'} value={email} onChange={handleChange} />
-                                <FormLabel>Password</FormLabel>
+                                <FormLabel htmlFor="password">Password</FormLabel>
                                 <Input type='password' name={'password'} id={'password'} value={password} onChange={handleChange} />
                                 {error ? (
                                     <Stack>

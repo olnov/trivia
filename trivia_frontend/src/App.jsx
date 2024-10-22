@@ -13,53 +13,64 @@ import Leaderboard from "./pages/Leaderboard";
 const isAuthenticated = () => {
   const token = localStorage.getItem('token'); // Assume JWT token is stored in localStorage
   if (token) {
-      try {
-          const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload
-          const currentTime = Date.now() / 1000; // Get current time in seconds
-          return payload.exp > currentTime; // Check if token is expired
-      } catch (error) {
-          return false;
-      }
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload
+      const currentTime = Date.now() / 1000; // Get current time in seconds
+      return payload.exp > currentTime; // Check if token is expired
+    } catch (error) {
+      return false;
+    }
   }
   return false;
 };
 
-const ProtectedRoute = ({element}) => {
+const ProtectedRoute = ({ element }) => {
   return isAuthenticated() ? element : <Navigate to="/login" />;
 };
 
 
 // Layout component that includes the Navbar
-const Layout = () => (
+const LayoutWithNavbar = () => (
   <>
     <Navbar /> {/* Navbar displayed on all pages */}
     <Outlet /> {/* Content of the current route */}
   </>
 );
 
+const LayoutWithoutNavbar = () => (
+  <>
+    <Outlet />
+  </>
+)
+
 const router = createBrowserRouter([
   {
-    element: <Layout />, // Apply Layout (Navbar + dynamic content)
+    element: <LayoutWithoutNavbar />, // Apply Layout (Navbar + dynamic content)
     children: [
       {
         path: "/login",
-        element: <Login />,  
+        element: <Login />,
       },
       {
         path: "/signup",
-        element: <Signup />, 
+        element: <Signup />,
       },
+    ],
+  },
+  {
+    element: <LayoutWithNavbar />,
+    children: [
       {
         path: "/home",
-        element: <ProtectedRoute element={<Home />} />,  
+        element: <ProtectedRoute element={<Home />} />,
       },
       {
         path: "/game",
-        element: <ProtectedRoute element={<Game />} />,  
+        element: <ProtectedRoute element={<Game />} />,
       },
       {
         path: "/leaderboard",
-        element: <ProtectedRoute element={<Leaderboard />} />,  
+        element: <ProtectedRoute element={<Leaderboard />} />,
       },
     ],
   },

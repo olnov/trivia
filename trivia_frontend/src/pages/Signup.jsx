@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardBody, CardFooter, Flex, Stack, Container, Text, Image, Link } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, CardFooter, Flex, Stack, Container, Text, Image, Link, Box } from '@chakra-ui/react'
 import { FormControl, FormLabel, FormErrorMessage, Input, Button } from '@chakra-ui/react'
 
 import { useState } from 'react'
@@ -12,12 +12,16 @@ const Signup = ()=> {
     const [password,setPassword]=useState("");
     const [confirmPassword, setConfirmPassword]=useState("");
     const [error, setError]=useState("");
+    const [isPasswordValid, setIsPasswordValid] = useState(false)
 
     const navigate = useNavigate();
 
     const handleSignUp = async(e)=> {
         e.preventDefault();
         try{
+            if (!isPasswordValid) {
+                return setError("Password doesn't meet the password policy requirements");
+            }
             if (password === confirmPassword) {
                 await signUp(fullName,email,password);
                 const data = await login(email,password);
@@ -33,6 +37,17 @@ const Signup = ()=> {
             console.log("Error: ", errorMessage);
         }
     }
+
+    const validatePassword = (password) => {
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[~`!#$%^&*+=\-\[\]\\';,/{}|\\":<>?])(?=.{8,})/;
+        setIsPasswordValid(regex.test(password));
+    }
+
+    const handlePasswordChange = (e) => {
+        const newPassword = e.target.value;
+        setPassword(newPassword);
+        validatePassword(newPassword);
+      };
 
     return (
         <Flex alignContent={"center"} justifyContent={"center"} alignItems={"center"} height={"90vh"}>
@@ -72,7 +87,8 @@ const Signup = ()=> {
                         value={password}
                         name='password'
                         id='password'
-                        onChange={(e) => setPassword(e.target.value)}
+                        // onChange={(e) => setPassword(e.target.value)}
+                        onChange={handlePasswordChange}
                         required
                     />
                     <FormLabel>Confirm password</FormLabel>
@@ -100,6 +116,14 @@ const Signup = ()=> {
                 </Link>
                 </CardBody>
             </Card>
+            </Container>
+            <Container centerContent>
+                Password policy.
+                <br></br>
+                The password should contain at least one uppercase letter, at least one lowercase letter,
+                and at least one special character.
+                <br></br>
+                The password should be at least 8 characters long.
             </Container>
             </Flex>
         );
