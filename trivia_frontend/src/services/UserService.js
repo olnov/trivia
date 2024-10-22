@@ -1,5 +1,5 @@
 export const getUsers = async ()=> {
-    const response = await fetch(`${BACKEND}/users`, {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users`, {
         method: 'GET'
     });
 
