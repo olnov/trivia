@@ -47,13 +47,6 @@ export default function Nav() {
 
   const user_id = localStorage.getItem("userId");
 
-  useEffect(() => {
-    console.log(user_id);
-    if (user_id == null) {
-      navigate("/login");
-    }
-  }, [userId]);
-
   const handleLogout = () => {
     localStorage.removeItem("userId");
     navigate("/login");

@@ -12,17 +12,15 @@ RUN npm install
 COPY . .
 
 # Env vars
-ENV BACKEND_URL=$BACKEND_URL
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 
 # Build the React app
 RUN npm run build
 
 # Use nginx to serve the built app
 FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build-stage /trivia_frontend/dist /usr/share/nginx/html
 
 # Expose port 80
-EXPOSE 4173
-
-# Run the React app
-# RUN npm run preview
+EXPOSE 80
