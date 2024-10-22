@@ -2,16 +2,14 @@ import { Button, Text } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import "dotenv/config";
-
 const Game = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [shuffledAnswers, setShuffledAnswers] = useState([]); // To store shuffled answers for the current question
   const [playerAnswers, setPlayerAnswers] = useState([]); // To store player's selected answers
   const [time, setTime] = useState(45);
+  const [error, setError] = useState("");
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
@@ -63,13 +61,16 @@ const Game = () => {
     });
 
     try {
-      const response = await fetch(`${BACKEND_URL}/topscores/new`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(scoreData),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/topscores/new`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(scoreData),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to send score data to backend");
@@ -160,18 +161,20 @@ const Game = () => {
   if (questions.length === 0) {
     return (
       <>
-        <h1>Choose Difficulty</h1>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "10px",
-            margin: "20px 0",
-          }}
-        >
-          <Button onClick={() => fetchQuestions("easy")}>Easy</Button>
-          <Button onClick={() => fetchQuestions("medium")}>Medium</Button>
-          <Button onClick={() => fetchQuestions("hard")}>Hard</Button>
+        <div className="content-container quiz">
+          <h1>Choose Difficulty</h1>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "10px",
+              margin: "20px 0",
+            }}
+          >
+            <Button onClick={() => fetchQuestions("easy")}>Easy</Button>
+            <Button onClick={() => fetchQuestions("medium")}>Medium</Button>
+            <Button onClick={() => fetchQuestions("hard")}>Hard</Button>
+          </div>
         </div>
       </>
     );
@@ -203,10 +206,6 @@ const Game = () => {
         Question {currentQuestionIndex + 1} of {questions.length}:
       </h3>
       {/* Display the question */}
-      <Text
-        fontSize={24}
-        dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
-      />
       <Text
         fontSize={24}
         dangerouslySetInnerHTML={{ __html: currentQuestion.question }}

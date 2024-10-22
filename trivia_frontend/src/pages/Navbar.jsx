@@ -45,14 +45,14 @@ export default function Nav() {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const user_id = localStorage.getItem("userId");
+  // const user_id = localStorage.getItem("userId");
 
-  useEffect(() => {
-    console.log(user_id);
-    if (user_id == null) {
-      navigate("/login");
-    }
-  }, [userId]);
+  // useEffect(() => {
+  //   console.log(user_id);
+  //   if (user_id == null) {
+  //     navigate("/login");
+  //   }
+  // }, [userId]);
 
   const handleLogout = () => {
     localStorage.removeItem("userId");
