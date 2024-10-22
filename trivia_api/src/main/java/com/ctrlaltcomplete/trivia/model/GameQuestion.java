@@ -13,9 +13,6 @@ public class GameQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "trivia_id")
-    private Long triviaId;
-
     private String answer;
 
     @Column(name = "correct_answer")
@@ -32,17 +29,12 @@ public class GameQuestion {
     private LocalDateTime answeredAt;
 
     @ManyToOne
-    @JoinColumn(name = "game_id", nullable = false)
-    private Game game;
-
-    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public GameQuestion() {}
 
-    public GameQuestion(Long triviaId, String answer, String correctAnswer, Boolean isCorrect, String difficulty, Long score) {
-        this.triviaId = triviaId;
+    public GameQuestion(String answer, String correctAnswer, Boolean isCorrect, String difficulty, Long score) {
         this.answer = answer;
         this.correctAnswer = correctAnswer;
         this.isCorrect = isCorrect;

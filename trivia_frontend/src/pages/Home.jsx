@@ -7,7 +7,6 @@ const Home = () => {
 
   const handleClick = () => {
     navigate("/game");
-    // fetchQuestions();
   };
 
   const handleLeaderboardClick = async () => {
