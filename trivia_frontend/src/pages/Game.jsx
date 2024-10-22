@@ -198,7 +198,6 @@ const Game = () => {
 
     return (
       <div className="content-container quiz">
-      <div className="content-container quiz">
         <h1>Quiz Finished!</h1>
         <p>Correct Answers: {correctCount}</p>
         <p>Incorrect Answers: {incorrectCount}</p>
