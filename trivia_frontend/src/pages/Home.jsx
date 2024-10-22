@@ -14,7 +14,7 @@ const Home = () => {
   };
   return (
     <Box>
-        <Box>
+      <Box>
         <Button onClick={handleClick}>Begin</Button>
         <Button>Leaderboard</Button>
         <Text fontSize={32}>Welcome young quizzard!</Text>
