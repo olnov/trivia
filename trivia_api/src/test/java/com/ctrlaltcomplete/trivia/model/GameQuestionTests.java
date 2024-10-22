@@ -16,7 +16,6 @@ public class GameQuestionTests {
     public void setUp() {
         testGameQuestion = new GameQuestion();
         testGameQuestion.setUser(new User());
-        testGameQuestion.setGame(new Game());
         testGameQuestion.setDifficulty("Medium");
         testGameQuestion.setCorrectAnswer("Dough");
         testGameQuestion.setIsCorrect(Boolean.TRUE);
@@ -24,10 +23,9 @@ public class GameQuestionTests {
     }
 
 
-//    id BIGSERIAL PRIMARY KEY,
-//    game_id BIGINT REFERENCES games(id) ON DELETE CASCADE,
-//    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
-//    trivia_id BIGINT,
+//    CREATE TABLE game_questions (
+//            id BIGSERIAL PRIMARY KEY,
+//            user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
 //    answer TEXT,
 //    correct_answer TEXT,
 //    is_correct BOOLEAN,
