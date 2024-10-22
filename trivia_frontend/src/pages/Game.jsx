@@ -100,22 +100,6 @@ const Game = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (questions.length > 0 && !quizFinished) {
-  //     const countdown = setInterval(() => {
-  //       setTime((prevTime) => {
-  //         if (prevTime <= 1) {
-  //           clearInterval(countdown);
-  //           setQuizFinished(true);
-  //           sendScoreToBackend();
-  //         }
-  //         return prevTime - 1;
-  //       });
-  //     }, 1000);
-  //     return () => clearInterval(countdown);
-  //   }
-  // }, [questions, quizFinished]);
-
   const handleAnswerClick = (answer) => {
     if (quizFinished) return; // Prevent further answers if quiz is finished
 
@@ -197,7 +181,6 @@ const Game = () => {
     const finalScore = correctCount * finalScoreMultiplier;
 
     return (
-      <div className="content-container quiz">
       <div className="content-container quiz">
         <h1>Quiz Finished!</h1>
         <p>Correct Answers: {correctCount}</p>
