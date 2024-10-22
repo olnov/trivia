@@ -9,7 +9,6 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import Navbar from "./pages/Navbar"; // Import your Navbar component
-import Navbar from "./pages/Navbar"; // Import your Navbar component
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
