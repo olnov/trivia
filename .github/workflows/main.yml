@@ -39,7 +39,7 @@ jobs:
 
       - name: Build and Push Backend Image
         run: |
-          docker build --build-arg VITE_BACKEND_URL=${{ secrets.BACKEND_URL }} -t mqzcn/trivia_java:latest -f ./trivia_api/Dockerfile ./trivia_api
+          docker build -t mqzcn/trivia_java:latest -f ./trivia_api/Dockerfile ./trivia_api
           docker push mqzcn/trivia_java:latest
 
 # Frontend Job
@@ -58,5 +58,5 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build and Push Frontend Image
         run: |
-          docker build -t mqzcn/trivia_react:latest -f ./trivia_frontend/Dockerfile ./trivia_frontend
+          docker build --build-arg VITE_BACKEND_URL=${{ secrets.BACKEND_URL }} -t mqzcn/trivia_react:latest -f ./trivia_frontend/Dockerfile ./trivia_frontend
           docker push mqzcn/trivia_react:latest
