@@ -198,6 +198,7 @@ const Game = () => {
 
     return (
       <div className="content-container quiz">
+      <div className="content-container quiz">
         <h1>Quiz Finished!</h1>
         <p>Correct Answers: {correctCount}</p>
         <p>Incorrect Answers: {incorrectCount}</p>
@@ -217,6 +218,10 @@ const Game = () => {
         Question {currentQuestionIndex + 1} of {questions.length}:
       </h3>
       {/* Display the question */}
+      <Text
+        fontSize={24}
+        dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
+      />
       <Text
         fontSize={24}
         dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
