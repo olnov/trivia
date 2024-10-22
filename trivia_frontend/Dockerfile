@@ -25,4 +25,4 @@ COPY --from=build-stage /trivia_frontend/dist /usr/share/nginx/html
 EXPOSE 4173
 
 # Run the React app
-RUN npm run preview
+# RUN npm run preview
