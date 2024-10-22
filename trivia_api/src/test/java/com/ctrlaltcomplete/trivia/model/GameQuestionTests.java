@@ -42,4 +42,20 @@ public class GameQuestionTests {
         assertEquals(testGameQuestion.getIsCorrect(), Boolean.TRUE);
         assertEquals(testGameQuestion.getScore(),2L);
     }
+
+    @Test
+    public void GameQuestionsExampled() {
+        GameQuestion testGameQuestion2 = new GameQuestion("Dough", "Dough", Boolean.TRUE, "Medium", 2L);
+
+        assertEquals(testGameQuestion2.getCorrectAnswer(), "Dough");
+        assertEquals(testGameQuestion2.getDifficulty(), "Medium");
+        assertEquals(testGameQuestion2.getIsCorrect(), Boolean.TRUE);
+        assertEquals(testGameQuestion2.getScore(),2L);
+
+
+
+
+    }
+
+
 }
