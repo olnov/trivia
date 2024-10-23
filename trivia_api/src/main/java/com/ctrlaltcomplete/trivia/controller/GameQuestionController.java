@@ -2,12 +2,15 @@ package com.ctrlaltcomplete.trivia.controller;
 
 import com.ctrlaltcomplete.trivia.dto.AnswersDto;
 import com.ctrlaltcomplete.trivia.dto.AuthRequest;
+import com.ctrlaltcomplete.trivia.dto.ScoresDto;
 import com.ctrlaltcomplete.trivia.model.GameQuestion;
 import com.ctrlaltcomplete.trivia.model.User;
 import com.ctrlaltcomplete.trivia.repository.GameQuestionRepository;
 import com.ctrlaltcomplete.trivia.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.data.domain.PageRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -59,18 +63,9 @@ public class GameQuestionController {
     }
 
     @GetMapping("/topscores")
-    public ResponseEntity<Map<String, Map<String,String>>> scoreBoard() {
-        Map<String, Map<String, String>> response = new HashMap<>();
-        Map<String,String> player1 = new HashMap<>();
-        player1.put("name","John");
-        player1.put("score","1000");
-        Map<String, String> player2 = new HashMap<>();
-        player2.put("name","George");
-        player2.put("score","2000");
-
-        response.put("1",player1);
-        response.put("2", player2);
-
+    public ResponseEntity<List<ScoresDto>> scoreBoard() {
+        Pageable limit = PageRequest.of(0, 10);
+        List<ScoresDto> response = gameQuestionRepository.getScoreBoard(limit);
         return ResponseEntity.ok(response);
     }
 

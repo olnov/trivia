@@ -1,12 +1,6 @@
 import { useState } from "react";
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+
+import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 import "./App.css";
 import Navbar from "./pages/Navbar"; // Import your Navbar component
 import Login from "./pages/Login";
@@ -14,6 +8,7 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
+
 import { ReactElement } from "react";
 
 const isAuthenticated = () => {
@@ -35,17 +30,27 @@ const ProtectedRoute = ({ element }) => {
 };
 
 // Layout component that includes the Navbar
-const Layout = () => (
+const LayoutWithNavbar = () => (
   <>
     <Navbar /> {/* Navbar displayed on all pages */}
     <Outlet /> {/* Content of the current route */}
   </>
 );
 
+const LayoutWithoutNavbar = () => (
+  <>
+    <Outlet />
+  </>
+)
+
 const router = createBrowserRouter([
   {
-    element: <Layout />, // Apply Layout (Navbar + dynamic content)
+    element: <LayoutWithoutNavbar />, // Apply Layout (Navbar + dynamic content)
     children: [
+      {
+        path:"/",
+        element: <Login />,
+      },
       {
         path: "/login",
         element: <Login />,
@@ -54,6 +59,11 @@ const router = createBrowserRouter([
         path: "/signup",
         element: <Signup />,
       },
+    ],
+  },
+  {
+    element: <LayoutWithNavbar />,
+    children: [
       {
         path: "/home",
         element: <ProtectedRoute element={<Home />} />,
