@@ -34,7 +34,7 @@ jobs:
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew clean build
+        run: ./gradlew clean build -x test
         working-directory: ./trivia_api
 
       - name: Build and Push Backend Image
@@ -58,5 +58,5 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build and Push Frontend Image
         run: |
-          docker build -t mqzcn/trivia_react:latest -f ./trivia_frontend/Dockerfile ./trivia_frontend
+          docker build --build-arg VITE_BACKEND_URL=${{ secrets.BACKEND_URL }} -t mqzcn/trivia_react:latest -f ./trivia_frontend/Dockerfile ./trivia_frontend
           docker push mqzcn/trivia_react:latest

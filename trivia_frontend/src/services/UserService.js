@@ -1,7 +1,5 @@
-const BACKEND = "http://localhost:8080";
-
 export const getUsers = async ()=> {
-    const response = await fetch(`${BACKEND}/users`, {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users`, {
         method: 'GET'
     });
 
@@ -22,7 +20,7 @@ export const login = async (email, password)=> {
         body: JSON.stringify({email, password}),
     };
 
-    const response = await fetch(`${BACKEND}/login`, requestOptions);
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/login`, requestOptions);
     if (response.status === 200) {
         const data = await response.json();
         return data;
@@ -40,7 +38,7 @@ export const signUp = async (fullName, email, password) => {
         body: JSON.stringify({fullName, email, password}),
     };
 
-    const response = await fetch(`${BACKEND}/users`, requestOptions);
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users`, requestOptions);
     if (response.status === 201) {
         return "User successfully registered";
     } else {
