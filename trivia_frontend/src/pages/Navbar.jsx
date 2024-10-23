@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import Logo from "../assets/images/quizzard_octupus_logo.png";
 
 import {
   Box,
@@ -71,15 +72,16 @@ export default function Nav() {
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
           <Box>
             <img
-              src="src/assets/images/quizzard_octupus_logo.png"
+              src={Logo}
               style={{ width: "40px", cursor: "pointer" }}
               onClick={() => navigate("/home")}
+              alt="logo"
             />
           </Box>
 
           <Flex alignItems={"center"}>
             <Stack direction={"row"} spacing={7}>
-              <Button onClick={toggleColorMode}>
+              <Button data-testid="dark-mode" onClick={toggleColorMode}>
                 {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
               </Button>
 
@@ -92,6 +94,7 @@ export default function Nav() {
                   minW={0}
                 >
                   <Avatar
+                    data-testid="avatar"
                     size={"sm"}
                     src={"https://avatars.dicebear.com/api/male/username.svg"}
                   />
@@ -100,6 +103,7 @@ export default function Nav() {
                   <br />
                   <Center>
                     <Avatar
+                      data-testid="avatar"
                       size={"2xl"}
                       src={"https://avatars.dicebear.com/api/male/username.svg"}
                     />
@@ -112,7 +116,9 @@ export default function Nav() {
                   <MenuDivider />
                   <MenuItem>Your Games</MenuItem>
                   <MenuItem>Account Settings</MenuItem>
-                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                  <MenuItem data-testid="Logout-button" onClick={handleLogout}>
+                    Logout
+                  </MenuItem>
                 </MenuList>
               </Menu>
             </Stack>
