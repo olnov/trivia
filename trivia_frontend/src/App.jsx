@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 import "./App.css";
 import Navbar from "./pages/Navbar"; // Import your Navbar component
@@ -8,11 +9,13 @@ import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
 
+import { ReactElement } from "react";
+
 const isAuthenticated = () => {
-  const token = localStorage.getItem('token'); 
+  const token = localStorage.getItem("token"); // Assume JWT token is stored in localStorage
   if (token) {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload
+      const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
       const currentTime = Date.now() / 1000; // Get current time in seconds
       return payload.exp > currentTime; // Check if token is expired
     } catch (error) {
@@ -25,7 +28,6 @@ const isAuthenticated = () => {
 const ProtectedRoute = ({ element }) => {
   return isAuthenticated() ? element : <Navigate to="/login" />;
 };
-
 
 // Layout component that includes the Navbar
 const LayoutWithNavbar = () => (
@@ -77,7 +79,6 @@ const router = createBrowserRouter([
     ],
   },
 ]);
-
 
 function App() {
   return (

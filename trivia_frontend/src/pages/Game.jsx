@@ -207,6 +207,10 @@ const Game = () => {
         fontSize={24}
         dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
       />
+      <Text
+        fontSize={24}
+        dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
+      />
 
       <div
         style={{

@@ -19,6 +19,7 @@ const Home = () => {
     <Box boxShadow='base' p='6' rounded='md'>
         <Box>
         <Text fontSize={32} centerContent>Welcome young quizzard!</Text>
+
         <Box width={400}>
           Well done on logging in and creating your profile! When ready, click
           Begin to start your journey and become a quizzard. Alternatively, see
