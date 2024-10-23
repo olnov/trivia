@@ -61,7 +61,7 @@ const Game = () => {
     });
 
     try {
-      const response = await fetch("http://localhost:8080/topscores/new", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/topscores/new`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

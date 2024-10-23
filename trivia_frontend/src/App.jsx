@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import Navbar from "./pages/Navbar"; // Import your Navbar component
 import Login from "./pages/Login";
@@ -11,7 +9,7 @@ import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
 
 const isAuthenticated = () => {
-  const token = localStorage.getItem('token'); // Assume JWT token is stored in localStorage
+  const token = localStorage.getItem('token'); 
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload
@@ -47,6 +45,10 @@ const router = createBrowserRouter([
   {
     element: <LayoutWithoutNavbar />, // Apply Layout (Navbar + dynamic content)
     children: [
+      {
+        path:"/",
+        element: <Login />,
+      },
       {
         path: "/login",
         element: <Login />,

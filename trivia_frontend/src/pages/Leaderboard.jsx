@@ -1,15 +1,5 @@
 import { Box, Button, Text, Card, CardBody, Center } from "@chakra-ui/react";
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
-  TableContainer,
-} from '@chakra-ui/react'
+import { Table, Tbody, Tr, Td, TableContainer } from '@chakra-ui/react'
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -21,21 +11,19 @@ const Leaderboard = () => {
 
   const fetchLeaderboard = async () => {
     try {
-      const response = await fetch("http://localhost:8080/topscores");
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/topscores`);
       if (!response.ok) {
         throw new Error("Failed to fetch leaderboard data");
       }
       const data = await response.json();
-      // Convert response object to array
-      // const leaderboardArray = Object.entries(data);
       const leaderboardArray = data;
       setLeaderboardState(leaderboardArray);
       console.log("Array is: ", JSON.stringify(leaderboardArray));
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
-      setError(error.message); // Set error message
+      setError(error.message);
     } finally {
-      setLoading(false); // Set loading to false after fetching
+      setLoading(false); 
     }
   };
 

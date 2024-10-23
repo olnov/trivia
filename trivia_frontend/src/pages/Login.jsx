@@ -2,7 +2,7 @@ import { Container, Flex, Text, Image } from '@chakra-ui/react'
 import { Card, CardHeader, CardBody } from '@chakra-ui/react'
 import { FormControl, FormLabel, Input, Button, Link, Stack } from '@chakra-ui/react'
 import Logo from "../assets/images/quizzard_octupus_logo.png"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/UserService';
 
