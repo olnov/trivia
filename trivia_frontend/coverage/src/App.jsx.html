@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/75</span>
+                <span class='fraction'>0/78</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/75</span>
+                <span class='fraction'>0/78</span>
             </div>
         
             
@@ -151,7 +151,11 @@
 <a name='L86'></a><a href='#L86'>86</a>
 <a name='L87'></a><a href='#L87'>87</a>
 <a name='L88'></a><a href='#L88'>88</a>
-<a name='L89'></a><a href='#L89'>89</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -160,7 +164,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -182,7 +186,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -228,7 +231,10 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -240,9 +246,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { useState } from "react";</span></span></span>
+&nbsp;
 <span class="cstat-no" title="statement not covered" >import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";</span>
-<span class="cstat-no" title="statement not covered" >import reactLogo from "./assets/react.svg";</span>
-<span class="cstat-no" title="statement not covered" >import viteLogo from "/vite.svg";</span>
 <span class="cstat-no" title="statement not covered" >import "./App.css";</span>
 <span class="cstat-no" title="statement not covered" >import Navbar from "./pages/Navbar"; // Import your Navbar component</span>
 <span class="cstat-no" title="statement not covered" >import Login from "./pages/Login";</span>
@@ -251,11 +256,13 @@
 <span class="cstat-no" title="statement not covered" >import Game from "./pages/Game";</span>
 <span class="cstat-no" title="statement not covered" >import Leaderboard from "./pages/Leaderboard";</span>
 &nbsp;
+<span class="cstat-no" title="statement not covered" >import { ReactElement } from "react";</span>
+&nbsp;
 <span class="cstat-no" title="statement not covered" >const isAuthenticated = () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  const token = localStorage.getItem('token'); // Assume JWT token is stored in localStorage</span>
+<span class="cstat-no" title="statement not covered" >  const token = localStorage.getItem("token"); // Assume JWT token is stored in localStorage</span>
 <span class="cstat-no" title="statement not covered" >  if (token) {</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload</span>
+<span class="cstat-no" title="statement not covered" >      const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload</span>
 <span class="cstat-no" title="statement not covered" >      const currentTime = Date.now() / 1000; // Get current time in seconds</span>
 <span class="cstat-no" title="statement not covered" >      return payload.exp &gt; currentTime; // Check if token is expired</span>
 <span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
@@ -268,7 +275,6 @@
 <span class="cstat-no" title="statement not covered" >const ProtectedRoute = ({ element }) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  return isAuthenticated() ? element : &lt;Navigate to="/login" /&gt;;</span>
 <span class="cstat-no" title="statement not covered" >};</span>
-&nbsp;
 &nbsp;
 // Layout component that includes the Navbar
 <span class="cstat-no" title="statement not covered" >const LayoutWithNavbar = () =&gt; (</span>
@@ -288,6 +294,10 @@
 <span class="cstat-no" title="statement not covered" >  {</span>
 <span class="cstat-no" title="statement not covered" >    element: &lt;LayoutWithoutNavbar /&gt;, // Apply Layout (Navbar + dynamic content)</span>
 <span class="cstat-no" title="statement not covered" >    children: [</span>
+<span class="cstat-no" title="statement not covered" >      {</span>
+<span class="cstat-no" title="statement not covered" >        path:"/",</span>
+<span class="cstat-no" title="statement not covered" >        element: &lt;Login /&gt;,</span>
+<span class="cstat-no" title="statement not covered" >      },</span>
 <span class="cstat-no" title="statement not covered" >      {</span>
 <span class="cstat-no" title="statement not covered" >        path: "/login",</span>
 <span class="cstat-no" title="statement not covered" >        element: &lt;Login /&gt;,</span>
@@ -317,7 +327,6 @@
 <span class="cstat-no" title="statement not covered" >  },</span>
 <span class="cstat-no" title="statement not covered" >]);</span>
 &nbsp;
-&nbsp;
 <span class="cstat-no" title="statement not covered" >function App() {</span>
 <span class="cstat-no" title="statement not covered" >  return (</span>
 <span class="cstat-no" title="statement not covered" >    &lt;&gt;</span>
@@ -334,7 +343,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-10-23T08:49:40.651Z
+                at 2024-10-23T15:21:36.914Z
             </div>
         <script src="../prettify.js"></script>
         <script>
