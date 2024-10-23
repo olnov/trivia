@@ -61,7 +61,7 @@ const Game = () => {
     });
 
     try {
-      const response = await fetch("http://localhost:8080/topscores/new", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/topscores/new`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,22 +99,6 @@ const Game = () => {
       console.error(err);
     }
   };
-
-  // useEffect(() => {
-  //   if (questions.length > 0 && !quizFinished) {
-  //     const countdown = setInterval(() => {
-  //       setTime((prevTime) => {
-  //         if (prevTime <= 1) {
-  //           clearInterval(countdown);
-  //           setQuizFinished(true);
-  //           sendScoreToBackend();
-  //         }
-  //         return prevTime - 1;
-  //       });
-  //     }, 1000);
-  //     return () => clearInterval(countdown);
-  //   }
-  // }, [questions, quizFinished]);
 
   const handleAnswerClick = (answer) => {
     if (quizFinished) return; // Prevent further answers if quiz is finished
@@ -174,7 +158,9 @@ const Game = () => {
   if (questions.length === 0) {
     return (
       <>
+        <div style={{ textAlign: 'center' }}>
         <h1>Choose Difficulty</h1>
+        </div>
         <div
           style={{
             display: "flex",

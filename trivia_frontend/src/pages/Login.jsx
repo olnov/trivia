@@ -2,7 +2,7 @@ import { Container, Flex, Text, Image } from '@chakra-ui/react'
 import { Card, CardHeader, CardBody } from '@chakra-ui/react'
 import { FormControl, FormLabel, Input, Button, Link, Stack } from '@chakra-ui/react'
 import Logo from "../assets/images/quizzard_octupus_logo.png"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/UserService';
 
@@ -49,9 +49,9 @@ const Login = () => {
                         </CardHeader>
                         <CardBody>
                             <FormControl>
-                                <FormLabel>Email address</FormLabel>
+                                <FormLabel htmlFor="email">Email address</FormLabel>
                                 <Input type='email' name={'email'} id={'email'} value={email} onChange={handleChange} />
-                                <FormLabel>Password</FormLabel>
+                                <FormLabel htmlFor="password">Password</FormLabel>
                                 <Input type='password' name={'password'} id={'password'} value={password} onChange={handleChange} />
                                 {error ? (
                                     <Stack>
