@@ -11,6 +11,10 @@ public class ScoresDto {
         this.totalScore = totalScore;
     }
 
+    public ScoresDto() {
+
+    }
+
     public Long getUserId() {
         return userId;
     }
