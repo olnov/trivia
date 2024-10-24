@@ -1,4 +1,4 @@
-import { Button, Text } from "@chakra-ui/react";
+import { Box, Button, Card, Center, Container, Text } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -158,21 +158,36 @@ const Game = () => {
   if (questions.length === 0) {
     return (
       <>
-        <div style={{ textAlign: 'center' }}>
-        <h1>Choose Difficulty</h1>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "10px",
-            margin: "20px 0",
-          }}
-        >
-          <Button onClick={() => fetchQuestions("easy")}>Easy</Button>
-          <Button onClick={() => fetchQuestions("medium")}>Medium</Button>
-          <Button onClick={() => fetchQuestions("hard")}>Hard</Button>
-        </div>
+        <br></br>
+        <Center>
+          <Box boxShadow="base" p="6" rounded="md" width={"400px"}>
+            <div style={{ textAlign: "center" }}>
+              <Text fontSize={32}>Choose Difficulty</Text>
+              <br></br>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "10px",
+                margin: "20px 0",
+              }}
+            >
+              <Button colorScheme="teal" onClick={() => fetchQuestions("easy")}>
+                Easy
+              </Button>
+              <Button
+                colorScheme="orange"
+                onClick={() => fetchQuestions("medium")}
+              >
+                Medium
+              </Button>
+              <Button colorScheme="red" onClick={() => fetchQuestions("hard")}>
+                Hard
+              </Button>
+            </div>
+          </Box>
+        </Center>
       </>
     );
   }
@@ -183,14 +198,40 @@ const Game = () => {
     const finalScore = correctCount * finalScoreMultiplier;
 
     return (
-      <div className="content-container quiz">
-        <h1>Quiz Finished!</h1>
-        <p>Correct Answers: {correctCount}</p>
-        <p>Incorrect Answers: {incorrectCount}</p>
-        <p>Total Time Taken: {45 - time} seconds</p>
-        <h1>Score: {finalScore}</h1>
-        <Button onClick={() => navigate("/home")}>Play Again</Button>
-      </div>
+      <>
+        <Container centerContent>
+          <Box
+            className="content-container quiz"
+            boxShadow="base"
+            p="6"
+            rounded="md"
+            width={"400px"}
+          >
+            <Text>Quiz Finished!</Text>
+            <br></br>
+            <Text>
+              Level played: <Text fontWeight={"bold"}>{difficulty}</Text>
+            </Text>
+            <br></br>
+            <Text>
+              Correct Answers: <Text fontWeight={"bold"}>{correctCount}</Text>
+            </Text>
+            <Text>
+              Incorrect Answers:{" "}
+              <Text fontWeight={"bold"}>{incorrectCount}</Text>
+            </Text>
+            <Text>
+              Total Time Taken:{" "}
+              <Text fontWeight={"bold"}>{45 - time} seconds</Text>
+            </Text>
+            <br></br>
+            <Text fontWeight={"bold"} fontSize={24}>
+              Score: {finalScore}
+            </Text>
+          </Box>
+          <Button onClick={() => navigate("/home")}>Play Again</Button>
+        </Container>
+      </>
     );
   }
 
@@ -199,15 +240,14 @@ const Game = () => {
   return (
     <div className="content-container quiz">
       <h1>Quiz</h1>
-      <h3>
+
+      <Text fontSize={18}>
         Question {currentQuestionIndex + 1} of {questions.length}:
-      </h3>
+      </Text>
       {/* Display the question */}
+      <br></br>
       <Text
-        fontSize={24}
-        dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
-      />
-      <Text
+        data-testid="question"
         fontSize={24}
         dangerouslySetInnerHTML={{ __html: currentQuestion.question }}
       />
@@ -217,7 +257,7 @@ const Game = () => {
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "space-between",
-          maxWidth: "900px",
+          maxWidth: "1200px",
           margin: "20px auto",
         }}
       >
@@ -229,7 +269,7 @@ const Game = () => {
               width: "48%",
               margin: "5px 0",
               padding: "10px",
-              fontSize: "24px",
+              fontSize: "18px",
               cursor: "pointer",
             }}
           >
