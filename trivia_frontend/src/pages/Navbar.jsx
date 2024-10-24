@@ -40,6 +40,7 @@ const NavLink = ({ children }) => {
 };
 
 export default function Nav() {
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
   const [userId, setUserId] = useState(null);
@@ -56,6 +57,33 @@ export default function Nav() {
     localStorage.removeItem("userId");
     navigate("/login");
   };
+
+  const getUser = async (id) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/users/${id}`,
+      {
+        method: "GET",
+      }
+    );
+    if (response.status === 200) {
+      const data = await response.json();
+      return data;
+    } else {
+      throw new Error(`Error: ${response.status}`);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userData = await getUser(user_id);
+        setUsername(userData.fullName);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchData();
+  }, [user_id]);
 
   return (
     <>
@@ -100,7 +128,7 @@ export default function Nav() {
                   <Avatar
                     data-testid="avatar"
                     size={"sm"}
-                    src={"https://avatars.dicebear.com/api/male/username.svg"}
+                    src={"https://bit.ly/sage-adebayo"}
                   />
                 </MenuButton>
                 <MenuList alignItems={"center"}>
@@ -109,17 +137,17 @@ export default function Nav() {
                     <Avatar
                       data-testid="avatar"
                       size={"2xl"}
-                      src={"https://avatars.dicebear.com/api/male/username.svg"}
+                      src={"https://bit.ly/sage-adebayo"}
                     />
                   </Center>
                   <br />
                   <Center>
-                    <p>Username</p>
+                    <p>{username}</p>
                   </Center>
                   <br />
                   <MenuDivider />
-                  <MenuItem>Your Games</MenuItem>
-                  <MenuItem onClick={handleProfileView}>Profile</MenuItem>
+                  <MenuItem>My Games</MenuItem>
+                  <MenuItem onClick={handleProfileView}>My Profile</MenuItem>
                   <MenuItem data-testid="Logout-button" onClick={handleLogout}>
                     Logout
                   </MenuItem>
