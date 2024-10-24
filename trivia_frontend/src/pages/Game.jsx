@@ -61,16 +61,13 @@ const Game = () => {
     });
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/topscores/new`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(scoreData),
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/topscores/new`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(scoreData),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to send score data to backend");
