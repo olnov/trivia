@@ -31,15 +31,6 @@ public class UserController {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        // Fetch all users
-        List<User> users = (List<User>) userRepository.findAll();
-
-        // Return the list of users with HTTP status OK
-        return new ResponseEntity<>(users, HttpStatus.OK);
-    }
-
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUserById (@PathVariable("id") Long id) {
         Optional<User> user = userRepository.findById(id);

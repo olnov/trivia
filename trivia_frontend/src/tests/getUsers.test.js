@@ -1,7 +1,7 @@
-import { getUsers } from '../services/UserService';
+import { getUser } from '../services/UserService';
 import { vi, describe, beforeEach, it, expect } from 'vitest';
 
-describe('getUsers', () => {
+describe('getUser', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -14,7 +14,7 @@ describe('getUsers', () => {
       })
     );
 
-    const users = await getUsers();
+    const users = await getUser(1);
     expect(users).toEqual([{ id: 1, name: 'John Doe' }]);
   });
 
@@ -25,6 +25,6 @@ describe('getUsers', () => {
       })
     );
 
-    await expect(getUsers()).rejects.toThrow('Error: 500');
+    await expect(getUser()).rejects.toThrow('Error: 500');
   });
 });
