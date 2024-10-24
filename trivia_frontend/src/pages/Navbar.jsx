@@ -48,6 +48,10 @@ export default function Nav() {
 
   const user_id = localStorage.getItem("userId");
 
+  const handleProfileView = () => {
+    navigate("/profile");
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("userId");
     navigate("/login");
@@ -115,7 +119,7 @@ export default function Nav() {
                   <br />
                   <MenuDivider />
                   <MenuItem>Your Games</MenuItem>
-                  <MenuItem>Account Settings</MenuItem>
+                  <MenuItem onClick={handleProfileView}>Profile</MenuItem>
                   <MenuItem data-testid="Logout-button" onClick={handleLogout}>
                     Logout
                   </MenuItem>

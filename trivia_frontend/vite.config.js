@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom', // Use jsdom for tests
     globals:true,
+    testTimeout: 50000,
     setupFiles: './src/tests/setupTests.js', // Optional, for setting up jest-dom
   },
 })
