@@ -16,6 +16,7 @@ import {
 import { SmallCloseIcon } from "@chakra-ui/icons";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { getUser } from "../services/UserService";
 
 export default function UserProfileEdit() {
   const navigate = useNavigate();
@@ -23,30 +24,16 @@ export default function UserProfileEdit() {
   const [email, setEmail] = useState("");
 
   const user_id = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
 
   const handleProfileHide = () => {
     navigate("/home");
   };
 
-  const getUser = async (id) => {
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}/users/${id}`,
-      {
-        method: "GET",
-      }
-    );
-    if (response.status === 200) {
-      const data = await response.json();
-      return data;
-    } else {
-      throw new Error(`Error: ${response.status}`);
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = await getUser(user_id);
+        const userData = await getUser(user_id, token);
         setUsername(userData.fullName);
         setEmail(userData.email);
       } catch (error) {

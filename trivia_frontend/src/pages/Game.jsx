@@ -1,6 +1,7 @@
 import { Box, Button, Card, Center, Container, Text } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { saveScores } from "../services/ScoreService";
 
 const Game = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Game = () => {
   const [quizFinished, setQuizFinished] = useState(false);
   const [difficulty, setDifficulty] = useState("easy");
   const [audioPlayed, setAudioPlayed] = useState(false);
+  const token = localStorage.getItem("token");
 
   const audioRef = useRef(null);
 
@@ -61,18 +63,7 @@ const Game = () => {
     });
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/topscores/new`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(scoreData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send score data to backend");
-      }
-
+      await saveScores(token,scoreData);
       console.log("Score data successfully sent to backend");
     } catch (error) {
       console.error("Error sending score data:", error);

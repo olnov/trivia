@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Logo from "../assets/images/quizzard_octupus_logo.png";
+import { getUser } from "../services/UserService";
 
 import {
   Box,
@@ -48,6 +49,7 @@ export default function Nav() {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const user_id = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
 
   const handleProfileView = () => {
     navigate("/profile");
@@ -58,25 +60,10 @@ export default function Nav() {
     navigate("/login");
   };
 
-  const getUser = async (id) => {
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}/users/${id}`,
-      {
-        method: "GET",
-      }
-    );
-    if (response.status === 200) {
-      const data = await response.json();
-      return data;
-    } else {
-      throw new Error(`Error: ${response.status}`);
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = await getUser(user_id);
+        const userData = await getUser(user_id,token);
         setUsername(userData.fullName);
       } catch (error) {
         console.error(error);
@@ -88,16 +75,6 @@ export default function Nav() {
   return (
     <>
       <Box
-        // style={{
-        //   // width: "100%",
-        //   // overflow: "hidden",
-        //   // display: "inline-block",
-        //   // float: "left",
-        //   position: "relative",
-        //   top: "0",
-        //   width: "100%",
-        //   // z-index: "1000" /* Ensures the navbar stays on top of other content *
-        // }}
         bg={useColorModeValue("gray.100", "gray.900")}
         px={4}
       >
