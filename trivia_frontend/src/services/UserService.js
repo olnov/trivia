@@ -1,6 +1,10 @@
-export const getUser = async (id)=> {
+export const getUser = async (id, token)=> {
     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users/${id}`, {
-        method: 'GET'
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
     });
 
     if (response.status === 200) {

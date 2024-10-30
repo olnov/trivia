@@ -2,20 +2,18 @@ import { Box, Button, Text, Card, CardBody, Center } from "@chakra-ui/react";
 import { Table, Tbody, Tr, Td, TableContainer } from '@chakra-ui/react'
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getScores } from "../services/ScoreService";
 
 const Leaderboard = () => {
   const navigate = useNavigate();
   const [leaderboardState, setLeaderboardState] = useState([]);
   const [loading, setLoading] = useState(true); // Track loading state
   const [error, setError] = useState(null); // Track error state
+  const token = localStorage.getItem("token");
 
   const fetchLeaderboard = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/topscores`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch leaderboard data");
-      }
-      const data = await response.json();
+      const data = await getScores(token);
       const leaderboardArray = data;
       setLeaderboardState(leaderboardArray);
       console.log("Array is: ", JSON.stringify(leaderboardArray));

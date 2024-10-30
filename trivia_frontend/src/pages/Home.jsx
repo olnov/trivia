@@ -7,13 +7,14 @@ import { useState, useEffect } from "react";
 const Home = () => {
     const [userName, setUserName] = useState();
     const user_id = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
     const navigate = useNavigate();
 
 
     useEffect(() => {
         try {
             const fetchUser = async () => {
-                const user = await getUser(user_id);
+                const user = await getUser(user_id, token);
                 setUserName(user.fullName);
                 console.log("Name: ", user.fullName);
             }
