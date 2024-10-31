@@ -46,7 +46,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize  // Updated functional style
-                        .requestMatchers("/login", "/register").permitAll()  // Public access to login and register
+                        .requestMatchers("/login" ).permitAll()  // Public access to login and register
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers("/images/**").permitAll()

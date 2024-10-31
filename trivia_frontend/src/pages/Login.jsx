@@ -1,7 +1,7 @@
 import { Container, Flex, Text, Image } from '@chakra-ui/react'
 import { Card, CardHeader, CardBody } from '@chakra-ui/react'
 import { FormControl, FormLabel, Input, Button, Link, Stack } from '@chakra-ui/react'
-import Logo from "../assets/images/quizzard_octupus_logo.png"
+import Logo from "../assets/images/octopus-logo.png"
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/UserService';
@@ -73,7 +73,7 @@ const Login = () => {
                         <Card textAlign={"-webkit-center;"} width={"350px"} >
                             <CardHeader>
                                 <Container>
-                                    <Image src={Logo} height={"50px"} width={"45px"}></Image>
+                                    <Image src={Logo} height={"60px"} width={"60px"}></Image>
                                     <Text fontSize={32}>Quizzard</Text>
                                     <Text>Login</Text>
                                 </Container>
