@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Logo from "../assets/images/quizzard_octupus_logo.png";
+import Logo from "../assets/images/octopus-logo.png";
 import { getUser } from "../services/UserService";
 
 import {
@@ -82,7 +82,7 @@ export default function Nav() {
           <Box>
             <img
               src={Logo}
-              style={{ width: "40px", cursor: "pointer" }}
+              style={{ width: "60px", cursor: "pointer" }}
               onClick={() => navigate("/home")}
               alt="logo"
             />

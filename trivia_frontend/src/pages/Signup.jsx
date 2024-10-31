@@ -4,7 +4,7 @@ import { FormControl, FormLabel, FormHelperText, FormErrorMessage, Input, Button
 import { useState } from 'react'
 import { signUp, login } from '../services/UserService'
 import { useNavigate } from 'react-router-dom'
-import Logo from "../assets/images/quizzard_octupus_logo.png"
+import Logo from "../assets/images/octopus-logo.png"
 import "./Style.css";
 
 const Signup = () => {
@@ -81,7 +81,7 @@ const Signup = () => {
                     <Card textAlign={"-webkit-center;"} width={"350px"}>
                         <CardHeader>
                             <Container>
-                                <Image src={Logo} height={"50px"} width={"45px"}></Image>
+                                <Image src={Logo} height={"60px"} width={"60px"}></Image>
                                 <Text fontSize={32}>Quizzard</Text>
                                 <Text>Sign up</Text>
                             </Container>
