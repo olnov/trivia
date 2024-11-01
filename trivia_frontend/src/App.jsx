@@ -1,6 +1,11 @@
 import { useState } from "react";
 
-import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 import "./App.css";
 import Navbar from "./pages/Navbar"; // Import your Navbar component
 import Login from "./pages/Login";
@@ -8,7 +13,8 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
-import UserProfileEdit from "./pages/Profile"; 
+import UserProfileEdit from "./pages/Profile";
+import Multiplayer from "./pages/Multiplayer";
 
 import { ReactElement } from "react";
 
@@ -42,14 +48,14 @@ const LayoutWithoutNavbar = () => (
   <>
     <Outlet />
   </>
-)
+);
 
 const router = createBrowserRouter([
   {
     element: <LayoutWithoutNavbar />, // Apply Layout (Navbar + dynamic content)
     children: [
       {
-        path:"/",
+        path: "/",
         element: <Login />,
       },
       {
@@ -80,6 +86,10 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: <ProtectedRoute element={<UserProfileEdit />} />,
+      },
+      {
+        path: "/multiplayer",
+        element: <ProtectedRoute element={<Multiplayer />} />,
       },
     ],
   },
