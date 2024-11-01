@@ -44,14 +44,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize  // Updated functional style
-                        .requestMatchers("/login" ).permitAll()  // Public access to login and register
+                        .requestMatchers("/login").permitAll()  // Public access to login
+                        .requestMatchers("/topic/**","/app/**","/game/**" ).permitAll() //WebSocket connections
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers("/images/**").permitAll()
                         .anyRequest().authenticated())  // All other requests need authentication
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter before UsernamePasswordAuthenticationFilter// Add the JWT authentication filter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Add the JWT authentication filter
 
         return http.build();
     }
@@ -60,7 +62,8 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://trivia-react-latest.onrender.com"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
+//        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://trivia-react-latest.onrender.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);  // Allow cookies, authorization headers

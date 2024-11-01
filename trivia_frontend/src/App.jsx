@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
 import UserProfileEdit from "./pages/Profile"; 
+import Competititon from "./pages/Competition";
 
 import { ReactElement } from "react";
 
@@ -80,6 +81,10 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: <ProtectedRoute element={<UserProfileEdit />} />,
+      },
+      {
+        path: "/competition",
+        element: <ProtectedRoute element={<Competititon />} />,
       },
     ],
   },
