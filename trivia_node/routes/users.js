@@ -1,9 +1,11 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const tokenChecker = require('../middleware/tokenChecker');
+const { createUser, getUserById, updateUserById, deleteUserById } = require("../controllers/User");
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+router.post("/", createUser);
+router.get("/:id", tokenChecker, getUserById);
+router.put("/:id", tokenChecker, updateUserById);
+router.delete("/:id", tokenChecker, deleteUserById);
 
 module.exports = router;
