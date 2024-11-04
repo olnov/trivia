@@ -61,6 +61,7 @@ exports.getScoreBoard = async (req, res) => {
         FROM users u 
         JOIN game_questions gq ON u.id = gq.user_id 
         GROUP BY u.id, u.full_name 
+        ORDER by SUM(gq.score) DESC
         LIMIT 10;
         `;
         
