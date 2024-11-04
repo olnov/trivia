@@ -1,41 +1,452 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const cors = require("cors");
+const fetch = require("node-fetch");
 
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+const app = express();
+app.use(cors());
+const server = http.createServer(app);
 
-var app = express();
-
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
-
-app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
-
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
-
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404));
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173", // Your React app's URL
+    methods: ["GET", "POST"],
+  },
 });
 
-// error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
+// Store active game rooms
+const gameRooms = new Map();
+const activeGames = new Map();
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render("error");
+// Generate a random room code
+const generateRoomCode = () => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+};
+
+async function fetchQuestions(difficulty = "medium") {
+  try {
+    const response = await fetch(
+      `https://opentdb.com/api.php?amount=10&difficulty=${difficulty}&type=multiple`
+    );
+    const data = await response.json();
+
+    if (data.response_code === 0 && data.results && data.results.length > 0) {
+      console.log("Successfully fetched", data.results.length, "questions");
+      return data.results;
+    } else {
+      console.error("Invalid response from trivia API:", data);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching questions:", error);
+    return null;
+  }
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function sendQuestion(roomCode) {
+  const room = gameRooms.get(roomCode);
+  if (!room || !room.questions) {
+    console.error("Room or questions not found for room:", roomCode);
+    return;
+  }
+
+  const question = room.questions[room.currentQuestion];
+  if (!question) {
+    console.error("Question not found for index:", room.currentQuestion);
+    return;
+  }
+
+  console.log("Preparing to send question:", question.question);
+  const options = shuffleArray([
+    ...question.incorrect_answers,
+    question.correct_answer,
+  ]);
+
+  console.log("Sending question to room:", roomCode, {
+    question: question.question,
+    options: options,
+    questionIndex: room.currentQuestion,
+  });
+
+  io.to(roomCode).emit("gameQuestion", {
+    question: question.question,
+    options: options,
+    questionIndex: room.currentQuestion,
+  });
+}
+
+function startTimer(roomCode) {
+  const game = activeGames.get(roomCode);
+  const room = gameRooms.get(roomCode);
+  if (!game || !room) {
+    console.log("Cannot start timer - game or room not found");
+    return;
+  }
+
+  // Clear any existing timer
+  if (game.timer) {
+    clearInterval(game.timer);
+  }
+
+  game.timeLeft = 15;
+  io.to(roomCode).emit("timeUpdate", { timeLeft: game.timeLeft });
+
+  game.timer = setInterval(() => {
+    game.timeLeft--;
+    io.to(roomCode).emit("timeUpdate", { timeLeft: game.timeLeft });
+
+    if (game.timeLeft <= 0) {
+      clearInterval(game.timer);
+      handleQuestionTimeout(roomCode);
+    }
+  }, 1000);
+}
+
+function handleQuestionTimeout(roomCode) {
+  const room = gameRooms.get(roomCode);
+  if (!room) return;
+
+  // Auto-submit empty answers for players who haven't answered
+  room.players.forEach((player) => {
+    if (!player.answers) {
+      player.answers = [];
+    }
+    if (player.answers.length <= room.currentQuestion) {
+      player.answers.push({ answer: null, isCorrect: false });
+    }
+  });
+
+  room.currentQuestion++;
+
+  if (room.currentQuestion >= room.questions.length) {
+    endGame(roomCode);
+  } else {
+    sendQuestion(roomCode);
+    startTimer(roomCode);
+  }
+}
+
+function endGame(roomCode) {
+  const room = gameRooms.get(roomCode);
+  if (!room) return;
+
+  const game = activeGames.get(roomCode);
+  if (game && game.timer) {
+    clearInterval(game.timer);
+  }
+
+  io.to(roomCode).emit("gameOver", {
+    finalScores: room.players,
+  });
+
+  // Clean up
+  activeGames.delete(roomCode);
+  room.status = "finished";
+}
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+  let currentRoom = null;
+
+  // Handle room creation
+  socket.on("createRoom", ({ playerName }) => {
+    if (currentRoom) {
+      console.log("Player already in a room:", socket.id);
+      return;
+    }
+
+    const roomCode = generateRoomCode();
+    const player = {
+      id: socket.id,
+      name: playerName,
+      isHost: true,
+      score: 0,
+      answers: [],
+    };
+
+    gameRooms.set(roomCode, {
+      players: [player],
+      status: "waiting",
+      questions: null,
+      currentQuestion: 0,
+    });
+
+    currentRoom = roomCode;
+    socket.join(roomCode);
+    socket.emit("roomCreated", { roomCode });
+    socket.emit("joinedRoom", {
+      players: [player],
+      roomCode,
+    });
+  });
+
+  // Handle joining rooms
+  socket.on("joinRoom", ({ playerName, roomCode }) => {
+    console.log("Join room attempt:", roomCode, "Player:", playerName);
+
+    if (currentRoom) {
+      console.log("Player already in a room:", socket.id);
+      socket.emit("error", { message: "You are already in a room" });
+      return;
+    }
+
+    const room = gameRooms.get(roomCode);
+    if (!room) {
+      socket.emit("error", { message: "Room not found" });
+      return;
+    }
+
+    if (room.status !== "waiting") {
+      socket.emit("error", { message: "Game already in progress" });
+      return;
+    }
+
+    if (room.players.length >= 4) {
+      socket.emit("error", { message: "Room is full" });
+      return;
+    }
+
+    const player = {
+      id: socket.id,
+      name: playerName,
+      isHost: false,
+      score: 0,
+      answers: [],
+    };
+
+    room.players.push(player);
+    currentRoom = roomCode;
+    socket.join(roomCode);
+    io.to(roomCode).emit("playersUpdate", room.players);
+    socket.emit("joinedRoom", {
+      players: room.players,
+      roomCode,
+    });
+  });
+
+  // Handle disconnection
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+    if (!currentRoom) return;
+
+    const room = gameRooms.get(currentRoom);
+    if (!room) return;
+
+    const playerIndex = room.players.findIndex((p) => p.id === socket.id);
+    if (playerIndex === -1) return;
+
+    room.players.splice(playerIndex, 1);
+
+    if (room.players.length === 0) {
+      console.log("Room empty, deleting:", currentRoom);
+      gameRooms.delete(currentRoom);
+      activeGames.delete(currentRoom);
+    } else {
+      // If host left, assign new host
+      if (!room.players.some((p) => p.isHost)) {
+        room.players[0].isHost = true;
+      }
+      io.to(currentRoom).emit("playersUpdate", room.players);
+    }
+
+    socket.leave(currentRoom);
+  });
+
+  // Handle rejoin attempts
+  socket.on("rejoinGame", ({ roomCode }) => {
+    console.log("Player attempting to rejoin game:", roomCode);
+    const room = gameRooms.get(roomCode);
+
+    if (!room) {
+      console.error("Room not found for rejoin:", roomCode);
+      socket.emit("error", { message: "Game room not found" });
+      return;
+    }
+
+    // Join the socket to the room
+    socket.join(roomCode);
+
+    // If game is in progress, send current question
+    if (room.status === "playing" && room.questions) {
+      const currentQuestion = room.questions[room.currentQuestion];
+      const options = shuffleArray([
+        ...currentQuestion.incorrect_answers,
+        currentQuestion.correct_answer,
+      ]);
+
+      // Send current game state to rejoining player
+      socket.emit("gameQuestion", {
+        question: currentQuestion.question,
+        options: options,
+        questionIndex: room.currentQuestion,
+      });
+
+      // Send current scores
+      socket.emit("scoreUpdate", { players: room.players });
+
+      // Send current timer
+      const game = activeGames.get(roomCode);
+      if (game) {
+        socket.emit("timeUpdate", { timeLeft: game.timeLeft });
+      }
+    }
+  });
+
+  // Handle game start
+  socket.on("startGame", async ({ roomCode }) => {
+    console.log("Starting game for room:", roomCode);
+    const room = gameRooms.get(roomCode);
+    if (!room) {
+      console.error("Room not found:", roomCode);
+      return;
+    }
+
+    if (room.status === "playing") {
+      console.error("Game already in progress");
+      return;
+    }
+
+    try {
+      console.log("Fetching questions...");
+      const questions = await fetchQuestions();
+      if (!questions || questions.length === 0) {
+        throw new Error("Failed to fetch questions");
+      }
+
+      // Set up game state
+      room.status = "playing";
+      room.questions = questions;
+      room.currentQuestion = 0;
+      room.players = room.players.map((player) => ({
+        ...player,
+        score: 0,
+        answers: [],
+      }));
+
+      // Set up game timer
+      activeGames.set(roomCode, {
+        timer: null,
+        timeLeft: 15,
+      });
+
+      // First notify about game status change
+      io.to(roomCode).emit("gameStatusUpdate", { status: "playing" });
+
+      // Give clients time to transition, then send first question
+      setTimeout(() => {
+        if (room.status === "playing") {
+          console.log("Sending first question to room:", roomCode);
+          const firstQuestion = room.questions[0];
+          const options = shuffleArray([
+            ...firstQuestion.incorrect_answers,
+            firstQuestion.correct_answer,
+          ]);
+
+          io.to(roomCode).emit("gameQuestion", {
+            question: firstQuestion.question,
+            options: options,
+            questionIndex: 0,
+          });
+
+          // Start timer after sending question
+          startTimer(roomCode);
+        }
+      }, 2000);
+    } catch (error) {
+      console.error("Error starting game:", error);
+      io.to(roomCode).emit("error", { message: "Failed to start game" });
+      room.status = "waiting";
+      io.to(roomCode).emit("gameStatusUpdate", { status: "waiting" });
+    }
+  });
+
+  socket.on("submitAnswer", ({ answer, roomCode, questionIndex }) => {
+    console.log(
+      "Answer submitted:",
+      answer,
+      "Room:",
+      roomCode,
+      "Index:",
+      questionIndex
+    );
+    const room = gameRooms.get(roomCode);
+    if (!room || !room.questions) return;
+
+    const player = room.players.find((p) => p.id === socket.id);
+    if (!player) return;
+
+    const question = room.questions[questionIndex];
+    if (!question) return;
+
+    const isCorrect = answer === question.correct_answer;
+    player.score += isCorrect ? 1 : 0;
+    player.answers.push({ answer, isCorrect });
+
+    io.to(roomCode).emit("scoreUpdate", { players: room.players });
+
+    // Check if all players have answered
+    const allAnswered = room.players.every(
+      (p) => p.answers.length > questionIndex
+    );
+
+    if (allAnswered) {
+      clearInterval(activeGames.get(roomCode)?.timer);
+
+      if (questionIndex >= room.questions.length - 1) {
+        endGame(roomCode);
+      } else {
+        room.currentQuestion = questionIndex + 1;
+        setTimeout(() => {
+          sendQuestion(roomCode);
+          startTimer(roomCode);
+        }, 2000);
+      }
+    }
+  });
+
+  socket.on("playAgain", async ({ roomCode }) => {
+    console.log("Play again request for room:", roomCode);
+    const room = gameRooms.get(roomCode);
+    if (!room) {
+      socket.emit("error", { message: "Room not found" });
+      return;
+    }
+
+    // Reset room state
+    room.status = "waiting";
+    room.questions = null;
+    room.currentQuestion = 0;
+    room.players = room.players.map((player) => ({
+      ...player,
+      score: 0,
+      answers: [],
+    }));
+
+    // Clean up any existing game
+    if (activeGames.has(roomCode)) {
+      const game = activeGames.get(roomCode);
+      if (game.timer) {
+        clearInterval(game.timer);
+      }
+      activeGames.delete(roomCode);
+    }
+
+    // Notify all players
+    io.to(roomCode).emit("gameStatusUpdate", { status: "waiting" });
+    io.to(roomCode).emit("playersUpdate", room.players);
+  });
 });
 
-module.exports = app;
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
