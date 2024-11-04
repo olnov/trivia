@@ -22,4 +22,6 @@ jobs:
               username: ${{ secrets.DOCKER_USERNAME }}
               password: ${{ secrets.DOCKER_PASSWORD }}
           - name: Build the Docker image
-            run: docker build . --file ./trivia_node/Dockerfile --tag quizzard-api:$(date +%s)
+            run: | 
+            docker build . --file ./trivia_node/Dockerfile ./trivia_node --tag quizzard-api:$(date +%s)
+            docker push mqzcn/trivia_react:latest
