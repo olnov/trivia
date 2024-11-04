@@ -18,7 +18,7 @@ const gameQuestionRouter = require("./routes/gameQuestion");
 const app = express();
 
 // Initializing DB. Use 'true' if you need to recreate DB schema
-syncDatabase(false);
+syncDatabase(process.env.DB_FORCE_SYNC | false);
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
