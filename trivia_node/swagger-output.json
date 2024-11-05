@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000/"
+      "url": "https://quizzard-api-latest.onrender.com/"
     }
   ],
   "paths": {
