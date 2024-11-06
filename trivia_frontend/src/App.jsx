@@ -15,6 +15,7 @@ import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
 import UserProfileEdit from "./pages/Profile";
 import Multiplayer from "./pages/Multiplayer";
+import MultiGame from "./pages/MultiGame";
 
 import { ReactElement } from "react";
 
@@ -90,6 +91,10 @@ const router = createBrowserRouter([
       {
         path: "/multiplayer",
         element: <ProtectedRoute element={<Multiplayer />} />,
+      },
+      {
+        path: "/game/multi",
+        element: <ProtectedRoute element={<MultiGame />} />,
       },
     ],
   },
