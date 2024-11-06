@@ -1,0 +1,20 @@
+FROM node:20-alpine
+
+WORKDIR /app
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+ENV DB_NAME=$DB_NAME
+ENV DB_USER=$DB_USER
+ENV DB_PASSWORD=$DB_PASSWORD
+ENV DB_HOST=$DB_HOST
+ENV DB_PORT=$DB_PORT
+ENV DB_FORCE_SYNC=$DB_FORCE_SYNC
+ENV DB_DIALECT=postgres
+
+CMD ["npm", "start"]

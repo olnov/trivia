@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "QG-17" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -22,4 +22,6 @@ jobs:
               username: ${{ secrets.DOCKER_USERNAME }}
               password: ${{ secrets.DOCKER_PASSWORD }}
           - name: Build the Docker image
-            run: docker build . --file Dockerfile --tag quizzard-api:$(date +%s)
+            run: | 
+              docker build -t mqzcn/quizzard_api:latest -f ./trivia_node/Dockerfile ./trivia_node
+              docker push mqzcn/quizzard_api:latest
