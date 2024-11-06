@@ -65,17 +65,16 @@ function sendQuestion(roomCode) {
     return;
   }
 
-  console.log("Preparing to send question:", question.question);
+  console.log(
+    "Sending question to room:",
+    roomCode,
+    "Index:",
+    room.currentQuestion
+  );
   const options = shuffleArray([
     ...question.incorrect_answers,
     question.correct_answer,
   ]);
-
-  console.log("Sending question to room:", roomCode, {
-    question: question.question,
-    options: options,
-    questionIndex: room.currentQuestion,
-  });
 
   io.to(roomCode).emit("gameQuestion", {
     question: question.question,
@@ -183,6 +182,7 @@ io.on("connection", (socket) => {
     currentRoom = roomCode;
     socket.join(roomCode);
     socket.emit("roomCreated", { roomCode });
+    console.log("Oleg wants to see this room code:", roomCode);
     socket.emit("joinedRoom", {
       players: [player],
       roomCode,
@@ -322,7 +322,7 @@ io.on("connection", (socket) => {
         throw new Error("Failed to fetch questions");
       }
 
-      // Set up game state
+      // Set up game state before emitting any events
       room.status = "playing";
       room.questions = questions;
       room.currentQuestion = 0;
@@ -338,29 +338,25 @@ io.on("connection", (socket) => {
         timeLeft: 15,
       });
 
-      // First notify about game status change
+      // Send game status update
       io.to(roomCode).emit("gameStatusUpdate", { status: "playing" });
 
-      // Give clients time to transition, then send first question
-      setTimeout(() => {
-        if (room.status === "playing") {
-          console.log("Sending first question to room:", roomCode);
-          const firstQuestion = room.questions[0];
-          const options = shuffleArray([
-            ...firstQuestion.incorrect_answers,
-            firstQuestion.correct_answer,
-          ]);
+      // Send first question immediately
+      const firstQuestion = questions[0];
+      const options = shuffleArray([
+        ...firstQuestion.incorrect_answers,
+        firstQuestion.correct_answer,
+      ]);
 
-          io.to(roomCode).emit("gameQuestion", {
-            question: firstQuestion.question,
-            options: options,
-            questionIndex: 0,
-          });
+      console.log("Sending first question to room:", roomCode);
+      io.to(roomCode).emit("gameQuestion", {
+        question: firstQuestion.question,
+        options: options,
+        questionIndex: 0,
+      });
 
-          // Start timer after sending question
-          startTimer(roomCode);
-        }
-      }, 2000);
+      // Start timer
+      startTimer(roomCode);
     } catch (error) {
       console.error("Error starting game:", error);
       io.to(roomCode).emit("error", { message: "Failed to start game" });
@@ -376,21 +372,42 @@ io.on("connection", (socket) => {
       "Room:",
       roomCode,
       "Index:",
-      questionIndex
+      questionIndex,
+      "Player:",
+      socket.id
     );
+
     const room = gameRooms.get(roomCode);
-    if (!room || !room.questions) return;
+    if (!room || !room.questions) {
+      console.error("Room or questions not found");
+      return;
+    }
 
     const player = room.players.find((p) => p.id === socket.id);
-    if (!player) return;
+    if (!player) {
+      console.error("Player not found");
+      return;
+    }
 
     const question = room.questions[questionIndex];
-    if (!question) return;
+    if (!question) {
+      console.error("Question not found");
+      return;
+    }
+
+    // Check if player has already answered this question
+    if (player.answers.length > questionIndex) {
+      console.log("Player already answered this question");
+      return;
+    }
 
     const isCorrect = answer === question.correct_answer;
     player.score += isCorrect ? 1 : 0;
     player.answers.push({ answer, isCorrect });
 
+    console.log("Updated player score:", player.score, "IsCorrect:", isCorrect);
+
+    // Emit score update to all players
     io.to(roomCode).emit("scoreUpdate", { players: room.players });
 
     // Check if all players have answered
@@ -399,6 +416,7 @@ io.on("connection", (socket) => {
     );
 
     if (allAnswered) {
+      console.log("All players have answered, moving to next question");
       clearInterval(activeGames.get(roomCode)?.timer);
 
       if (questionIndex >= room.questions.length - 1) {
