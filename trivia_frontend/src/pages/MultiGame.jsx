@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   VStack,
   Heading,
@@ -23,6 +23,7 @@ import socket from "../services/socketService";
 
 const MultiGame = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
   const [question, setQuestion] = useState(null);
   const [timeLeft, setTimeLeft] = useState(15);
@@ -33,45 +34,41 @@ const MultiGame = () => {
   const [gameFinished, setGameFinished] = useState(false);
 
   useEffect(() => {
-    const currentRoom = localStorage.getItem("currentGameRoom");
-    const gameStatus = localStorage.getItem("gameStatus");
+    const checkGameState = () => {
+      const locationState = location.state;
+      if (locationState?.roomCode && locationState?.gameStatus === "playing") {
+        console.log("Found game state in location:", locationState);
+        return locationState.roomCode;
+      }
 
-    console.log("MultiGame mounted. Room:", currentRoom, "Status:", gameStatus);
+      const currentRoom = localStorage.getItem("currentGameRoom");
+      const gameStatus = localStorage.getItem("gameStatus");
 
-    const checkGameStatus = () => {
-      const room = localStorage.getItem("currentGameRoom");
-      const status = localStorage.getItem("gameStatus");
+      console.log("Checking stored game state:", { currentRoom, gameStatus });
 
-      if (!room || status !== "playing") {
-        console.error("No room code or invalid game status");
+      if (!currentRoom || gameStatus !== "playing") {
+        console.error("No valid game state found");
+        toast({
+          title: "Error",
+          description: "Game session not found",
+          status: "error",
+          duration: 3000,
+        });
         navigate("/multiplayer");
         return false;
       }
-      return true;
+
+      return currentRoom;
     };
 
-    let retries = 3;
-    const tryCheckStatus = () => {
-      if (checkGameStatus() || retries <= 0) {
-        if (retries > 0) {
-          setRoomCode(currentRoom);
-          setupSocketConnection();
-        }
-      } else {
-        retries--;
-        setTimeout(tryCheckStatus, 100);
-      }
-    };
+    const currentRoom = checkGameState();
+    if (!currentRoom) return;
 
-    const setupSocketConnection = () => {
-      if (!socket.connected) {
-        socket.connect();
-      }
+    setRoomCode(currentRoom);
 
-      setupSocketListeners();
-      console.log("Attempting to rejoin game:", currentRoom);
-      socket.emit("rejoinGame", { roomCode: currentRoom });
-    };
+    if (!socket.connected) {
+      socket.connect();
+    }
 
     const setupSocketListeners = () => {
       socket.on("gameQuestion", ({ question, options, questionIndex }) => {
@@ -114,7 +111,9 @@ const MultiGame = () => {
       });
     };
 
-    tryCheckStatus();
+    setupSocketListeners();
+    console.log("Attempting to rejoin game:", currentRoom);
+    socket.emit("rejoinGame", { roomCode: currentRoom });
 
     return () => {
       if (gameFinished) {
@@ -127,7 +126,7 @@ const MultiGame = () => {
       socket.off("gameOver");
       socket.off("error");
     };
-  }, [navigate, toast]);
+  }, [navigate, location, toast]);
 
   const decodeHTMLEntities = (text) => {
     const textArea = document.createElement("textarea");
