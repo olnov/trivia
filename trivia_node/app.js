@@ -5,14 +5,21 @@ const cors = require("cors");
 const fetch = require("node-fetch");
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    credentials: true,
+  })
+);
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Your React app's URL
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
     methods: ["GET", "POST"],
+    credentials: true,
   },
+  allowEIO3: true,
 });
 
 // Store active game rooms
@@ -156,37 +163,100 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
   let currentRoom = null;
 
-  // Handle room creation
   socket.on("createRoom", ({ playerName }) => {
+    console.log("Create room request from:", playerName);
+
     if (currentRoom) {
       console.log("Player already in a room:", socket.id);
+      socket.emit("error", { message: "You are already in a room" });
       return;
     }
 
     const roomCode = generateRoomCode();
-    const player = {
-      id: socket.id,
-      name: playerName,
-      isHost: true,
-      score: 0,
-      answers: [],
-    };
-
-    gameRooms.set(roomCode, {
-      players: [player],
+    const room = {
       status: "waiting",
+      players: [
+        {
+          id: socket.id,
+          name: playerName,
+          isHost: true,
+          score: 0,
+          answers: [],
+        },
+      ],
       questions: null,
       currentQuestion: 0,
-    });
+    };
 
+    gameRooms.set(roomCode, room);
     currentRoom = roomCode;
     socket.join(roomCode);
+
+    console.log("Room created:", roomCode, "Host:", playerName);
     socket.emit("roomCreated", { roomCode });
-    console.log("Oleg wants to see this room code:", roomCode);
-    socket.emit("joinedRoom", {
-      players: [player],
-      roomCode,
-    });
+    io.to(roomCode).emit("playersUpdate", room.players);
+  });
+
+  socket.on("startGame", async ({ roomCode }) => {
+    console.log("Starting game for room:", roomCode);
+    const room = gameRooms.get(roomCode);
+
+    if (!room) {
+      console.error("Room not found:", roomCode);
+      socket.emit("error", { message: "Room not found" });
+      return;
+    }
+
+    if (room.status === "playing") {
+      console.error("Game already in progress");
+      socket.emit("error", { message: "Game already in progress" });
+      return;
+    }
+
+    const player = room.players.find((p) => p.id === socket.id);
+    if (!player || !player.isHost) {
+      console.error("Only host can start the game");
+      socket.emit("error", { message: "Only host can start the game" });
+      return;
+    }
+
+    try {
+      console.log("Fetching questions...");
+      const questions = await fetchQuestions();
+      if (!questions || questions.length === 0) {
+        throw new Error("Failed to fetch questions");
+      }
+
+      // Set up game state
+      room.status = "playing";
+      room.questions = questions;
+      room.currentQuestion = 0;
+      room.players = room.players.map((player) => ({
+        ...player,
+        score: 0,
+        answers: [],
+      }));
+
+      // Set up game timer
+      activeGames.set(roomCode, {
+        timer: null,
+        timeLeft: 15,
+      });
+
+      // Notify all players
+      io.to(roomCode).emit("gameStatusUpdate", { status: "playing" });
+
+      // Short delay to ensure clients are ready
+      setTimeout(() => {
+        sendQuestion(roomCode);
+        startTimer(roomCode);
+      }, 1000);
+    } catch (error) {
+      console.error("Error starting game:", error);
+      socket.emit("error", { message: "Failed to start game" });
+      room.status = "waiting";
+      io.to(roomCode).emit("gameStatusUpdate", { status: "waiting" });
+    }
   });
 
   // Handle joining rooms
@@ -298,70 +368,6 @@ io.on("connection", (socket) => {
       if (game) {
         socket.emit("timeUpdate", { timeLeft: game.timeLeft });
       }
-    }
-  });
-
-  // Handle game start
-  socket.on("startGame", async ({ roomCode }) => {
-    console.log("Starting game for room:", roomCode);
-    const room = gameRooms.get(roomCode);
-    if (!room) {
-      console.error("Room not found:", roomCode);
-      return;
-    }
-
-    if (room.status === "playing") {
-      console.error("Game already in progress");
-      return;
-    }
-
-    try {
-      console.log("Fetching questions...");
-      const questions = await fetchQuestions();
-      if (!questions || questions.length === 0) {
-        throw new Error("Failed to fetch questions");
-      }
-
-      // Set up game state before emitting any events
-      room.status = "playing";
-      room.questions = questions;
-      room.currentQuestion = 0;
-      room.players = room.players.map((player) => ({
-        ...player,
-        score: 0,
-        answers: [],
-      }));
-
-      // Set up game timer
-      activeGames.set(roomCode, {
-        timer: null,
-        timeLeft: 15,
-      });
-
-      // Send game status update
-      io.to(roomCode).emit("gameStatusUpdate", { status: "playing" });
-
-      // Send first question immediately
-      const firstQuestion = questions[0];
-      const options = shuffleArray([
-        ...firstQuestion.incorrect_answers,
-        firstQuestion.correct_answer,
-      ]);
-
-      console.log("Sending first question to room:", roomCode);
-      io.to(roomCode).emit("gameQuestion", {
-        question: firstQuestion.question,
-        options: options,
-        questionIndex: 0,
-      });
-
-      // Start timer
-      startTimer(roomCode);
-    } catch (error) {
-      console.error("Error starting game:", error);
-      io.to(roomCode).emit("error", { message: "Failed to start game" });
-      room.status = "waiting";
-      io.to(roomCode).emit("gameStatusUpdate", { status: "waiting" });
     }
   });
 
