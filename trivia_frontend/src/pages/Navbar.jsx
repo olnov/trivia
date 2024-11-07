@@ -57,6 +57,9 @@ export default function Nav() {
 
   const handleLogout = () => {
     localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    localStorage.removeItem("currentGameRoom");
+    localStorage.removeItem("gameStatus");
     navigate("/login");
   };
 
