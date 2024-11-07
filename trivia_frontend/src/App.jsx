@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import {
   createBrowserRouter,
   RouterProvider,
@@ -15,6 +13,7 @@ import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
 import UserProfileEdit from "./pages/Profile";
 import Multiplayer from "./pages/Multiplayer";
+import MultiGame from "./pages/MultiGame";
 
 import { ReactElement } from "react";
 
@@ -26,6 +25,7 @@ const isAuthenticated = () => {
       const currentTime = Date.now() / 1000; // Get current time in seconds
       return payload.exp > currentTime; // Check if token is expired
     } catch (error) {
+      console.error("Error: ", error);
       return false;
     }
   }
@@ -91,6 +91,10 @@ const router = createBrowserRouter([
         path: "/multiplayer",
         element: <ProtectedRoute element={<Multiplayer />} />,
       },
+      {
+        path: "/game/multi",
+        element: <ProtectedRoute element={<MultiGame />} />,
+      }
     ],
   },
 ]);
