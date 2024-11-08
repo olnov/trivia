@@ -121,7 +121,7 @@ const GameComponent = () => {
       socket.off("gameStatusUpdate");
       socket.off("error");
     };
-  }, [navigate, toast, gameRoom]);
+  }, [navigate, toast, gameRoom, gameStatus]);
 
   const handleCreateGame = () => {
     if (!userName) {
@@ -133,6 +133,7 @@ const GameComponent = () => {
       return;
     }
 
+    localStorage.setItem("gameStatus", gameStatus);
     socket.emit("createRoom", { playerName: userName });
   };
 
