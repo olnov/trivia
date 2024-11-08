@@ -127,7 +127,7 @@ const MultiGame = () => {
       socket.off("gameOver");
       socket.off("error");
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, gameFinished]);
 
   const decodeHTMLEntities = (text) => {
     const textArea = document.createElement("textarea");
@@ -166,6 +166,7 @@ const MultiGame = () => {
     }
     console.log("Requesting play again for room:", roomCode);
     socket.emit("playAgain", { roomCode });
+    setGameFinished(false);
   };
 
   if (gameFinished) {

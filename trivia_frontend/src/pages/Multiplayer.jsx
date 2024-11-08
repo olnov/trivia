@@ -219,7 +219,7 @@ const GameComponent = () => {
           <CardBody>
             <VStack spacing={4}>
               <Heading size="md">Players ({players.length}/4)</Heading>
-              {players.map((player, index) => (
+              {players.map((player) => (
                 <Card
                   key={player.id}
                   width="100%"

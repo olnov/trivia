@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Center, Text, Container } from "@chakra-ui/react";
+import { Button, Center, Text, Container, Flex } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "../services/UserService";
@@ -20,9 +20,9 @@ const Home = () => {
             }
             fetchUser();
         } catch (error) {
-            console.log("Error:");
+            console.log("Error:", error);
         }
-    }, [])
+    })
 
     const handleClick = () => {
         navigate("/game");
@@ -74,9 +74,15 @@ const Home = () => {
                         </Box>
                         <br></br>
                         <Container centerContent>
+                            <Flex gap={"4"}>
                             <Button colorScheme="teal" onClick={handleClick}>
-                                Begin
+                                Single Player
                             </Button>
+                            
+                            <Button colorScheme="teal" onClick={()=> {navigate("/multiplayer")}}>
+                                Multiplayer Mode
+                            </Button>
+                            </Flex>
                             <br></br>
                             <Button onClick={handleLeaderboardClick}>Leaderboard</Button>
                         </Container>

@@ -11,13 +11,15 @@ import {
 import Logo from "../assets/images/octopus-logo.png";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../services/UserService";
+import { getUser, login, isAuthenticated } from "../services/UserService";
+import socket from "../services/SocketService";
 import "./Style.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [userName, setUserName] = useState("");
   const navigate = useNavigate();
 
   //Add background
@@ -34,20 +36,20 @@ const Login = () => {
   const currentGameRoom = localStorage.getItem("currentGameRoom");
   const gameStatus = localStorage.getItem("gameStatus");
 
-  const olegChecks = () => {
-    if (userId && token) {
-      navigate("/home");
+  const storageCheck = async () => {
+    if (userId && token && isAuthenticated()) {
+      return navigate("/home");
     }
-    if (userId && token && currentGameRoom) {
-      navigate("/multiplayer");
-    }
-    if (userId && token && currentGameRoom && gameStatus == "waiting") {
+    if (userId && token && currentGameRoom && gameStatus && gameStatus == "waiting" && isAuthenticated()) {
+      const user = await getUser(userId, token);
+      setUserName(user.fullName);
+      socket.emit("joinRoom", { playerName: userName, roomCode: currentGameRoom });  
       navigate("/multiplayer");
     }
   };
 
   useEffect(() => {
-    olegChecks();
+    storageCheck();
   }, []);
 
   const getLoggedIn = async (e) => {
