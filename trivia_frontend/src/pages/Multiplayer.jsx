@@ -189,7 +189,7 @@ const GameComponent = () => {
                 <Button
                   colorScheme="blue"
                   onClick={handleCreateGame}
-                  isDisabled={players.length > 0}
+                  isDisabled={players.length > 0 || gameRoom}
                 >
                   Create Game
                 </Button>
