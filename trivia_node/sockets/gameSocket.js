@@ -442,8 +442,10 @@ const setupSocket = (server) => {
       }
 
       // Notify all players
+      io.to(roomCode).emit("gameRestarted");
       io.to(roomCode).emit("gameStatusUpdate", { status: "waiting" });
       io.to(roomCode).emit("playersUpdate", room.players);
+
     });
   });
 

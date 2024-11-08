@@ -36,6 +36,10 @@ const MultiGame = () => {
     const currentRoom = localStorage.getItem("currentGameRoom");
     const gameStatus = localStorage.getItem("gameStatus");
 
+    if (!socket.connected) {
+      socket.connect();
+    }
+
     console.log("MultiGame mounted. Room:", currentRoom, "Status:", gameStatus);
 
     const checkGameStatus = () => {
@@ -74,6 +78,10 @@ const MultiGame = () => {
     };
 
     const setupSocketListeners = () => {
+      if (socket.hasListeners("gameQuestion")) {
+        return; // Listeners are already set up
+      }
+
       socket.on("gameQuestion", ({ question, options, questionIndex }) => {
         console.log("Received question:", question, "Index:", questionIndex);
         setQuestion({
@@ -112,6 +120,21 @@ const MultiGame = () => {
           duration: 3000,
         });
       });
+
+      socket.on("gameRestarted", ()=> {
+        console.log("Game restarted");
+
+        setGameFinished(false);
+        setCurrentQuestionIndex(0);
+        setQuestion(null);
+        setTimeLeft(15);
+        setSelectedAnswer(null);
+
+        setPlayers((prevPlayers)=>
+          prevPlayers.map((player)=> ({...player, score: 0, answers: [],}))
+        );
+      });
+
     };
 
     tryCheckStatus();
@@ -121,13 +144,15 @@ const MultiGame = () => {
         localStorage.removeItem("currentGameRoom");
         localStorage.removeItem("gameStatus");
       }
+      
       socket.off("gameQuestion");
       socket.off("timeUpdate");
       socket.off("scoreUpdate");
       socket.off("gameOver");
       socket.off("error");
+      socket.off("gameRestarted");
     };
-  }, [navigate, toast, gameFinished]);
+  }, []);
 
   const decodeHTMLEntities = (text) => {
     const textArea = document.createElement("textarea");
@@ -166,7 +191,8 @@ const MultiGame = () => {
     }
     console.log("Requesting play again for room:", roomCode);
     socket.emit("playAgain", { roomCode });
-    setGameFinished(false);
+    // setGameFinished(false);
+    socket.emit("startGame", { roomCode });
   };
 
   if (gameFinished) {
@@ -252,8 +278,8 @@ const MultiGame = () => {
                       selectedAnswer === option
                         ? "green"
                         : selectedAnswer !== null
-                        ? "gray"
-                        : "blue"
+                          ? "gray"
+                          : "blue"
                     }
                     variant={selectedAnswer === option ? "solid" : "outline"}
                     _hover={{
