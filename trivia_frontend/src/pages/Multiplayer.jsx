@@ -62,6 +62,7 @@ const GameComponent = () => {
       setGameRoom(roomCode);
       setIsHost(true);
       localStorage.setItem("currentGameRoom", roomCode);
+      localStorage.setItem("isHost", true);
       toast({
         title: `Room created! Code: ${roomCode}`,
         description: "Share this code with other players",
@@ -70,10 +71,12 @@ const GameComponent = () => {
       });
     });
 
-    socket.on("joinedRoom", ({ players: updatedPlayers, roomCode }) => {
+    socket.on("joinedRoom", ({ players: updatedPlayers, roomCode, isHost }) => {
       console.log("Joined room:", roomCode, "Players:", updatedPlayers);
       setPlayers(updatedPlayers);
       setGameRoom(roomCode);
+      setIsHost(isHost);
+      localStorage.setItem("isHost",isHost);
       toast({
         title: "Joined room successfully!",
         status: "success",
@@ -81,9 +84,15 @@ const GameComponent = () => {
       });
     });
 
-    socket.on("playersUpdate", (updatedPlayers) => {
+    socket.on("playersUpdate", ({ players:updatedPlayers }) => {
       console.log("Players updated:", updatedPlayers);
       setPlayers(updatedPlayers);
+
+      const currentPlayer = updatedPlayers.find((p) => p.id === socket.id);
+      if (currentPlayer) {
+        setIsHost(currentPlayer.isHost);
+        localStorage.setItem("isHost", currentPlayer.isHost);
+      }
     });
 
     socket.on("gameStatusUpdate", ({ status }) => {
@@ -121,7 +130,7 @@ const GameComponent = () => {
       socket.off("gameStatusUpdate");
       socket.off("error");
     };
-  }, [navigate, toast, gameRoom]);
+  }, [navigate, toast, gameRoom, gameStatus]);
 
   const handleCreateGame = () => {
     if (!userName) {
@@ -133,6 +142,7 @@ const GameComponent = () => {
       return;
     }
 
+    localStorage.setItem("gameStatus", gameStatus);
     socket.emit("createRoom", { playerName: userName });
   };
 
@@ -188,7 +198,7 @@ const GameComponent = () => {
                 <Button
                   colorScheme="blue"
                   onClick={handleCreateGame}
-                  isDisabled={players.length > 0}
+                  isDisabled={players.length > 0 || gameRoom}
                 >
                   Create Game
                 </Button>
@@ -218,7 +228,7 @@ const GameComponent = () => {
           <CardBody>
             <VStack spacing={4}>
               <Heading size="md">Players ({players.length}/4)</Heading>
-              {players.map((player, index) => (
+              {players.map((player) => (
                 <Card
                   key={player.id}
                   width="100%"

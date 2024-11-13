@@ -5,7 +5,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import "./App.css";
-import Navbar from "./pages/Navbar"; // Import your Navbar component
+import Navbar from "./pages/Navbar"; 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
@@ -14,23 +14,9 @@ import Leaderboard from "./pages/Leaderboard";
 import UserProfileEdit from "./pages/Profile";
 import Multiplayer from "./pages/Multiplayer";
 import MultiGame from "./pages/MultiGame";
+import { isAuthenticated } from "./services/UserService";
 
-import { ReactElement } from "react";
-
-const isAuthenticated = () => {
-  const token = localStorage.getItem("token"); // Assume JWT token is stored in localStorage
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
-      const currentTime = Date.now() / 1000; // Get current time in seconds
-      return payload.exp > currentTime; // Check if token is expired
-    } catch (error) {
-      console.error("Error: ", error);
-      return false;
-    }
-  }
-  return false;
-};
+// import { ReactElement } from "react";
 
 const ProtectedRoute = ({ element }) => {
   return isAuthenticated() ? element : <Navigate to="/login" />;

@@ -49,3 +49,19 @@ export const signUp = async (fullName, email, password) => {
         throw new Error(`Error registering new user: ${response.status}`);
     }
 }
+
+
+export const isAuthenticated = () => {
+    const token = localStorage.getItem("token"); // Assume JWT token is stored in localStorage
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
+        const currentTime = Date.now() / 1000; // Get current time in seconds
+        return payload.exp > currentTime; // Check if token is expired
+      } catch (error) {
+        console.error("Error: ", error);
+        return false;
+      }
+    }
+    return false;
+  };

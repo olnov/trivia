@@ -26,7 +26,7 @@ export const saveScores = async (token, scoreData) => {
     }
 
     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/topscores/new`, requestOptions);
-    if (response.status === 200) {
+    if (response.status === 200 || response.status === 201 ) {
         return "Scores successfully stored";
     }else{
         throw new Error("Error:", response.status);
