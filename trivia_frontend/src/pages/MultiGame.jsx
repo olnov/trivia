@@ -46,20 +46,6 @@ const MultiGame = () => {
 
     console.log("MultiGame mounted. Room:", currentRoom, "Status:", gameStatus);
 
-    const checkGameStatus = () => {
-      const room = localStorage.getItem("currentGameRoom");
-      const status = localStorage.getItem("gameStatus");
-
-      if (!room || status !== "playing") {
-        if (!gameFinished) {
-          console.error("No room code or invalid game status");
-          navigate("/multiplayer");
-        }
-        return false;
-      }
-      return true;
-    };
-
     const setupSocketListeners = () => {
       if (!socket.hasListeners("gameRestarted")) {
         socket.on("gameRestarted", () => {
@@ -69,7 +55,7 @@ const MultiGame = () => {
           setQuestion(null);
           setTimeLeft(15);
           setSelectedAnswer(null);
-      
+
           setPlayers((prevPlayers) => {
             if (!prevPlayers.length) return [];
             return prevPlayers.map((player) => ({
@@ -78,11 +64,11 @@ const MultiGame = () => {
               answers: [],
             }));
           });
-      
+
           localStorage.setItem("gameStatus", "playing");
         });
       }
-      
+
       if (!socket.hasListeners("gameQuestion")) {
         socket.on("gameQuestion", ({ question, options, questionIndex }) => {
           setQuestion({
@@ -98,8 +84,32 @@ const MultiGame = () => {
       if (!socket.hasListeners("gameOver")) {
         socket.on("gameOver", ({ finalScores }) => {
           console.log("Game over received:", finalScores);
-          setGameFinished(true);
-          setPlayers(finalScores);
+          try {
+            if (!Array.isArray(finalScores)) {
+              throw new Error("Invalid final scores data");
+            }
+
+            setGameFinished(true);
+            setPlayers(finalScores);
+            setQuestion(null);
+            setTimeLeft(0);
+
+            localStorage.setItem("gameStatus", "finished");
+
+            console.log("Game over state set:", {
+              gameFinished: true,
+              players: finalScores,
+              roomCode: currentRoom,
+            });
+          } catch (error) {
+            console.error("Error handling game over:", error);
+            toast({
+              title: "Error ending game",
+              description: "Please try rejoining the game",
+              status: "error",
+              duration: 3000,
+            });
+          }
         });
       }
 
@@ -145,18 +155,34 @@ const MultiGame = () => {
       socket.emit("rejoinGame", { roomCode: currentRoom });
     };
 
+    const checkGameStatus = () => {
+      const currentRoom = localStorage.getItem("currentGameRoom");
+      const gameStatus = localStorage.getItem("gameStatus");
+      return (
+        currentRoom && (gameStatus === "playing" || gameStatus === "finished")
+      );
+    };
+
     if (checkGameStatus()) {
       setRoomCode(currentRoom);
       setupSocketConnection();
     }
 
     return () => {
+      const status = localStorage.getItem("gameStatus");
+      if (status !== "playing" && status !== "finished") {
+        localStorage.removeItem("currentGameRoom");
+        localStorage.removeItem("gameStatus");
+        localStorage.removeItem("isHost");
+      }
+
       socket.off("gameQuestion");
       socket.off("gameOver");
       socket.off("gameEnded");
       socket.off("timeUpdate");
       socket.off("scoreUpdate");
       socket.off("error");
+      socket.off("gameRestarted");
     };
   }, [navigate, toast, gameFinished]);
 
@@ -224,7 +250,11 @@ const MultiGame = () => {
                 </SimpleGrid>
                 {isHost && (
                   <>
-                    <Button colorScheme="blue" size="lg" onClick={handlePlayAgain}>
+                    <Button
+                      colorScheme="blue"
+                      size="lg"
+                      onClick={handlePlayAgain}
+                    >
                       Play Again
                     </Button>
                     <Button colorScheme="red" size="lg" onClick={handleEndGame}>
@@ -282,8 +312,8 @@ const MultiGame = () => {
                       selectedAnswer === option
                         ? "green"
                         : selectedAnswer !== null
-                          ? "gray"
-                          : "blue"
+                        ? "gray"
+                        : "blue"
                     }
                     variant={selectedAnswer === option ? "solid" : "outline"}
                     _hover={{

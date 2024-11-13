@@ -52,8 +52,17 @@ socket.on("joinedRoom", ({ roomCode }) => {
   currentRoom = roomCode;
 });
 
-socket.on("gameOver", () => {
+socket.on("gameOver", ({ finalScores }) => {
+  console.log("Socket received game over:", finalScores);
+  // Don't clear currentRoom here, wait for explicit game end
+});
+
+socket.on("gameEnded", () => {
+  console.log("Socket received game ended");
   currentRoom = null;
+  localStorage.removeItem("currentGameRoom");
+  localStorage.removeItem("gameStatus");
+  localStorage.removeItem("isHost");
 });
 
 socket.io.on("ping_timeout", () => {

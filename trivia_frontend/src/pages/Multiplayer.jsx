@@ -76,7 +76,7 @@ const GameComponent = () => {
       setPlayers(updatedPlayers);
       setGameRoom(roomCode);
       setIsHost(isHost);
-      localStorage.setItem("isHost",isHost);
+      localStorage.setItem("isHost", isHost);
       toast({
         title: "Joined room successfully!",
         status: "success",
@@ -84,7 +84,7 @@ const GameComponent = () => {
       });
     });
 
-    socket.on("playersUpdate", ({ players:updatedPlayers }) => {
+    socket.on("playersUpdate", ({ players: updatedPlayers }) => {
       console.log("Players updated:", updatedPlayers);
       setPlayers(updatedPlayers);
 
