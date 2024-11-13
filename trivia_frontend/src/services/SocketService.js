@@ -7,7 +7,7 @@ const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000", {
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
   timeout: 10000,
-  transports: ["websocket"],
+  transports: ["websocket", "polling" ],
 });
 
 let reconnectTimer = null;
