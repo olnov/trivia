@@ -3,12 +3,11 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-const bodyParser = require('body-parser');
-const swaggerUi = require('swagger-ui-express');
-const swaggerFile = require('./swagger-output.json');
-const cors = require('cors');
-const { syncDatabase } = require ('./db/db');
-
+const bodyParser = require("body-parser");
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger-output.json");
+const cors = require("cors");
+const { syncDatabase } = require("./db/db");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
@@ -34,7 +33,7 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/login", authRouter);
 app.use("/topscores", gameQuestionRouter);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
