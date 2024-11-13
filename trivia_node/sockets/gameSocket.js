@@ -161,6 +161,14 @@ const setupSocket = (server) => {
     cors: { origin: ["http://localhost:5173", "https://trivia-react-latest.onrender.com"] },
   });
 
+  // Log connection errors
+  io.engine.on("connection_error", (err) => {
+    console.log("Connection error occurred:");
+    console.log("Error code:", err.code); 
+    console.log("Error message:", err.message); 
+    console.log("Error context:", err.context); 
+  });
+
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
     let currentRoom = null;
