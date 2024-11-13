@@ -53,7 +53,15 @@ socket.on("joinedRoom", ({ roomCode }) => {
 });
 
 socket.on("gameOver", () => {
+  console.log("Game over event received.");
+});
+
+socket.on("gameEnded", () => {
+  console.log("Game ended by host.");
   currentRoom = null;
+  localStorage.removeItem("currentGameRoom");
+  localStorage.removeItem("gameStatus");
+  localStorage.removeItem("isHost");
 });
 
 socket.io.on("ping_timeout", () => {
