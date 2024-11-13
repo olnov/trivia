@@ -62,6 +62,7 @@ const GameComponent = () => {
       setGameRoom(roomCode);
       setIsHost(true);
       localStorage.setItem("currentGameRoom", roomCode);
+      localStorage.setItem("isHost", true);
       toast({
         title: `Room created! Code: ${roomCode}`,
         description: "Share this code with other players",
@@ -70,10 +71,12 @@ const GameComponent = () => {
       });
     });
 
-    socket.on("joinedRoom", ({ players: updatedPlayers, roomCode }) => {
+    socket.on("joinedRoom", ({ players: updatedPlayers, roomCode, isHost }) => {
       console.log("Joined room:", roomCode, "Players:", updatedPlayers);
       setPlayers(updatedPlayers);
       setGameRoom(roomCode);
+      setIsHost(isHost);
+      localStorage.setItem("isHost",isHost);
       toast({
         title: "Joined room successfully!",
         status: "success",
@@ -81,9 +84,15 @@ const GameComponent = () => {
       });
     });
 
-    socket.on("playersUpdate", (updatedPlayers) => {
+    socket.on("playersUpdate", ({ players:updatedPlayers }) => {
       console.log("Players updated:", updatedPlayers);
       setPlayers(updatedPlayers);
+
+      const currentPlayer = updatedPlayers.find((p) => p.id === socket.id);
+      if (currentPlayer) {
+        setIsHost(currentPlayer.isHost);
+        localStorage.setItem("isHost", currentPlayer.isHost);
+      }
     });
 
     socket.on("gameStatusUpdate", ({ status }) => {

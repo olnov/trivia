@@ -114,34 +114,51 @@ const handleQuestionTimeout = (io, roomCode) => {
   room.currentQuestion++;
 
   if (room.currentQuestion >= room.questions.length) {
-    endGame(io, roomCode);
+    gameOver(io, roomCode);
   } else {
     sendQuestion(io, roomCode);
     startTimer(io, roomCode);
   }
 };
 
+
+// Added split of endGame and gameOver
+// gameOver handles the round play results,
+// while endGame closes the room, resets all the game statuses
 const endGame = (io, roomCode) => {
   const room = gameRooms.get(roomCode);
   if (!room) return;
 
+  console.log(`End game processing for room: ${roomCode}`);
+
+  io.to(roomCode).emit("gameEnded");
+
+  // Clean up the room and active games
+  activeGames.delete(roomCode);
+  gameRooms.delete(roomCode);
+  console.log("Room deleted:", roomCode);
+};
+
+
+
+const gameOver = (io, roomCode) => {
+  const room = gameRooms.get(roomCode);
+  if (!room) return;
+
+  console.log(`Game over processing for room: ${roomCode}`);
+
   const game = activeGames.get(roomCode);
-  if (game && game.timer) {
+  if (game?.timer) {
     clearInterval(game.timer);
   }
-
-  io.to(roomCode).emit("gameOver", {
-    finalScores: room.players,
-  });
-
-  // Clean up
-  activeGames.delete(roomCode);
+  io.to(roomCode).emit("gameOver", { finalScores: room.players });
   room.status = "finished";
 };
 
+
 const setupSocket = (server) => {
   const io = new Server(server, {
-    cors: { origin: ["http://localhost:5173","https://trivia-react-latest.onrender.com"] },
+    cors: { origin: ["http://localhost:5173", "https://trivia-react-latest.onrender.com"] },
   });
 
   io.on("connection", (socket) => {
@@ -178,6 +195,7 @@ const setupSocket = (server) => {
       socket.emit("joinedRoom", {
         players: [player],
         roomCode,
+        isHost: player.isHost,
       });
     });
 
@@ -218,10 +236,11 @@ const setupSocket = (server) => {
       room.players.push(player);
       currentRoom = roomCode;
       socket.join(roomCode);
-      io.to(roomCode).emit("playersUpdate", room.players);
+      io.to(roomCode).emit("playersUpdate", { players: room.players });
       socket.emit("joinedRoom", {
         players: room.players,
         roomCode,
+        isHost: player.isHost,
       });
     });
 
@@ -247,7 +266,7 @@ const setupSocket = (server) => {
         if (!room.players.some((p) => p.isHost)) {
           room.players[0].isHost = true;
         }
-        io.to(currentRoom).emit("playersUpdate", room.players);
+        io.to(currentRoom).emit("playersUpdate", { players: room.players });
       }
 
       socket.leave(currentRoom);
@@ -402,7 +421,7 @@ const setupSocket = (server) => {
         clearInterval(activeGames.get(roomCode)?.timer);
 
         if (questionIndex >= room.questions.length - 1) {
-          endGame(io, roomCode);
+          gameOver(io, roomCode);
         } else {
           room.currentQuestion = questionIndex + 1;
           setTimeout(() => {
@@ -422,31 +441,60 @@ const setupSocket = (server) => {
         return;
       }
 
-      // Reset room state
-      room.status = "waiting";
-      room.questions = null;
-      room.currentQuestion = 0;
-      room.players = room.players.map((player) => ({
-        ...player,
-        score: 0,
-        answers: [],
-      }));
-
-      // Clean up any existing game
-      if (activeGames.has(roomCode)) {
-        const game = activeGames.get(roomCode);
-        if (game.timer) {
-          clearInterval(game.timer);
+      try {
+        const questions = await fetchQuestions();
+        if (!questions || questions.length === 0) {
+          throw new Error("Failed to fetch questions");
         }
-        activeGames.delete(roomCode);
+
+        // Reset room state
+        room.status = "playing";
+        room.questions = questions;
+        room.currentQuestion = 0;
+        room.players = room.players.map((player) => ({
+          ...player,
+          score: 0,
+          answers: [],
+        }));
+
+
+        activeGames.set(roomCode, {
+          timer: null,
+          timeLeft: 15,
+        });
+
+        // Notify all players
+        io.to(roomCode).emit("gameRestarted");
+        io.to(roomCode).emit("playersUpdate", { players: room.players });
+        sendQuestion(io, roomCode);
+        startTimer(io, roomCode);
+      } catch (error) {
+        console.error("Error handling play again:", error);
+        socket.emit("error", { message: "Failed to restart game" });
+      }
+    });
+
+    // Handle end game
+    socket.on('endGame', ({ roomCode }) => {
+      console.log('End game request received for room:', roomCode);
+      const room = gameRooms.get(roomCode);
+      if (!room) {
+        socket.emit('error', { message: 'Room not found' });
+        return;
       }
 
-      // Notify all players
-      io.to(roomCode).emit("gameRestarted");
-      io.to(roomCode).emit("gameStatusUpdate", { status: "waiting" });
-      io.to(roomCode).emit("playersUpdate", room.players);
+      // Verify that the requester is the host
+      const isHost = room.players.find((p) => p.id === socket.id && p.isHost);
+      if (!isHost) {
+        socket.emit('error', { message: 'Only the host can end the game' });
+        return;
+      }
+
+      // Call the endGame function
+      endGame(io, roomCode);
 
     });
+
   });
 
   return io;
