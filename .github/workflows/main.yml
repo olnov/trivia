@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - QG-4-Integration
 
 jobs:
   # Backend Job
