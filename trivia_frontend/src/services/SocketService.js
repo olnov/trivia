@@ -7,7 +7,7 @@ const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000", {
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
   timeout: 10000,
-  transports: ["websocket", "polling" ],
+  transports: ["websocket"],
 });
 
 let reconnectTimer = null;
@@ -52,9 +52,14 @@ socket.on("joinedRoom", ({ roomCode }) => {
   currentRoom = roomCode;
 });
 
-socket.on("gameOver", () => {
-  console.log("Game over event received.");
+socket.on("gameOver", ({ finalScores }) => {
+  console.log("Game over event received.", finalScores);
+  // Notify your state management or UI logic
+  // Example: emit a custom event or call a state update function
+  const gameOverEvent = new CustomEvent("gameOver", { detail: { finalScores } });
+  window.dispatchEvent(gameOverEvent);
 });
+
 
 socket.on("gameEnded", () => {
   console.log("Game ended by host.");
@@ -62,6 +67,10 @@ socket.on("gameEnded", () => {
   localStorage.removeItem("currentGameRoom");
   localStorage.removeItem("gameStatus");
   localStorage.removeItem("isHost");
+
+  // Notify the UI or redirect to a lobby page
+  const gameEndedEvent = new CustomEvent("gameEnded");
+  window.dispatchEvent(gameEndedEvent);
 });
 
 socket.io.on("ping_timeout", () => {
