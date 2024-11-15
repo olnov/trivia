@@ -24,6 +24,7 @@ import socket from "../services/SocketService";
 const MultiGame = () => {
   const navigate = useNavigate();
   const toast = useToast();
+
   const [question, setQuestion] = useState(null);
   const [timeLeft, setTimeLeft] = useState(15);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -36,87 +37,74 @@ const MultiGame = () => {
     return storedIsHost === "true";
   });
 
+  // Decode HTML entities (utility function)
+  const decodeHTMLEntities = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.innerHTML = text;
+    return textArea.value;
+  };
+
   useEffect(() => {
     const currentRoom = localStorage.getItem("currentGameRoom");
     const gameStatus = localStorage.getItem("gameStatus");
 
-    if (!socket.connected) {
-      socket.connect();
+    if (!currentRoom || gameStatus !== "playing") {
+      navigate("/multiplayer");
+      return;
     }
 
-    console.log("MultiGame mounted. Room:", currentRoom, "Status:", gameStatus);
-
-    const checkGameStatus = () => {
-      const room = localStorage.getItem("currentGameRoom");
-      const status = localStorage.getItem("gameStatus");
-
-      if (!room || status !== "playing") {
-        if (!gameFinished) {
-          console.error("No room code or invalid game status");
-          navigate("/multiplayer");
-        }
-        return false;
-      }
-      return true;
+    // Handle gameOver event
+    const handleGameOver = ({ finalScores }) => {
+      console.log("gameOver event received:", finalScores);
+      setGameFinished(true);
+      setPlayers([...finalScores]); // Replace players with new array
     };
 
+    // Set up WebSocket listeners
     const setupSocketListeners = () => {
-      if (!socket.hasListeners("gameRestarted")) {
-        socket.on("gameRestarted", () => {
-          console.log("Game restarted by host.");
-          setGameFinished(false);
-          setCurrentQuestionIndex(0);
-          setQuestion(null);
-          setTimeLeft(15);
-          setSelectedAnswer(null);
-      
-          setPlayers((prevPlayers) => {
-            if (!prevPlayers.length) return [];
-            return prevPlayers.map((player) => ({
-              ...player,
-              score: 0,
-              answers: [],
-            }));
-          });
-      
-          localStorage.setItem("gameStatus", "playing");
-        });
-      }
-      
-      if (!socket.hasListeners("gameQuestion")) {
-        socket.on("gameQuestion", ({ question, options, questionIndex }) => {
-          setQuestion({
-            text: decodeHTMLEntities(question),
-            options: options.map((opt) => decodeHTMLEntities(opt)),
-          });
-          setCurrentQuestionIndex(questionIndex);
-          setTimeLeft(15);
-          setSelectedAnswer(null);
-        });
-      }
+      socket.on("gameRestarted", () => {
+        console.log("Game restarted by host.");
+        setGameFinished(false);
+        setCurrentQuestionIndex(0);
+        setQuestion(null);
+        setTimeLeft(15);
+        setSelectedAnswer(null);
 
-      if (!socket.hasListeners("gameOver")) {
-        socket.on("gameOver", ({ finalScores }) => {
-          console.log("Game over received:", finalScores);
-          setGameFinished(true);
-          setPlayers(finalScores);
-        });
-      }
+        setPlayers((prevPlayers) =>
+          prevPlayers.map((player) => ({
+            ...player,
+            score: 0,
+            answers: [],
+          }))
+        );
 
-      if (!socket.hasListeners("gameEnded")) {
-        socket.on("gameEnded", () => {
-          console.log("Game ended by host.");
-          localStorage.removeItem("currentGameRoom");
-          localStorage.removeItem("gameStatus");
-          localStorage.removeItem("isHost");
-          setGameFinished(false);
-          setPlayers([]);
-          setQuestion(null);
-          setTimeLeft(15);
-          setSelectedAnswer(null);
-          navigate("/multiplayer");
+        localStorage.setItem("gameStatus", "playing");
+      });
+
+      socket.on("gameQuestion", ({ question, options, questionIndex }) => {
+        setQuestion({
+          text: decodeHTMLEntities(question),
+          options: options.map(decodeHTMLEntities),
         });
-      }
+        setCurrentQuestionIndex(questionIndex);
+        setTimeLeft(15);
+        setSelectedAnswer(null);
+      });
+
+      socket.on("gameOver", handleGameOver);
+
+      socket.on("gameEnded", () => {
+        console.log("Game ended by host.");
+        localStorage.removeItem("currentGameRoom");
+        localStorage.removeItem("gameStatus");
+        localStorage.removeItem("isHost");
+        setGameFinished(false);
+        setPlayers([]);
+        setQuestion(null);
+        setTimeLeft(15);
+        setSelectedAnswer(null);
+        navigate("/multiplayer");
+      });
 
       socket.on("timeUpdate", ({ timeLeft }) => {
         setTimeLeft(timeLeft);
@@ -140,36 +128,29 @@ const MultiGame = () => {
       });
     };
 
-    const setupSocketConnection = () => {
-      setupSocketListeners();
-      socket.emit("rejoinGame", { roomCode: currentRoom });
-    };
-
-    if (checkGameStatus()) {
-      setRoomCode(currentRoom);
-      setupSocketConnection();
+    // Setup socket connection and listeners
+    if (!socket.connected) {
+      socket.connect();
     }
 
+    setupSocketListeners();
+    setRoomCode(currentRoom);
+    socket.emit("rejoinGame", { roomCode: currentRoom });
+
+    // Cleanup listeners on unmount
     return () => {
+      socket.off("gameRestarted");
       socket.off("gameQuestion");
-      socket.off("gameOver");
+      socket.off("gameOver", handleGameOver);
       socket.off("gameEnded");
       socket.off("timeUpdate");
       socket.off("scoreUpdate");
       socket.off("error");
     };
-  }, [navigate, toast, gameFinished]);
-
-  const decodeHTMLEntities = (text) => {
-    const textArea = document.createElement("textarea");
-    textArea.innerHTML = text;
-    return textArea.value;
-  };
+  }, [navigate, toast]);
 
   const handleAnswerSubmit = (selectedAnswer) => {
-    if (!question || timeLeft <= 0 || !roomCode) {
-      return;
-    }
+    if (!question || timeLeft <= 0 || !roomCode) return;
 
     setSelectedAnswer(selectedAnswer);
 
@@ -282,8 +263,8 @@ const MultiGame = () => {
                       selectedAnswer === option
                         ? "green"
                         : selectedAnswer !== null
-                          ? "gray"
-                          : "blue"
+                        ? "gray"
+                        : "blue"
                     }
                     variant={selectedAnswer === option ? "solid" : "outline"}
                     _hover={{
