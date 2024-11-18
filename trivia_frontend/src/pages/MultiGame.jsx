@@ -271,6 +271,9 @@ const MultiGame = () => {
                       transform: "scale(1.02)",
                     }}
                     transition="all 0.2s"
+                    style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word"}}
                   >
                     {option}
                   </Button>
