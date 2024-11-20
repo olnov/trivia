@@ -188,8 +188,10 @@ const MultiGame = () => {
                     .map((player, index) => (
                       <Stat
                         key={player.id}
-                        bg={index === 0 ? "green.50" : "gray.50"}
+                        bg={index === 0 ? "brand.50" : "brand.50"}
                         p={4}
+                        borderWidth={1}
+                        borderColor={"gray.200"}
                         borderRadius="md"
                       >
                         <StatLabel>{player.name}</StatLabel>
@@ -291,8 +293,10 @@ const MultiGame = () => {
                 {players.map((player) => (
                   <Stat
                     key={player.id}
-                    bg={player.id === socket.id ? "blue.50" : "gray.50"}
+                    bg={player.id === socket.id ? "brand.50" : "brand.50"}
                     p={4}
+                    borderColor={"gray.300"}
+                    borderWidth={1}
                     borderRadius="md"
                   >
                     <StatLabel>

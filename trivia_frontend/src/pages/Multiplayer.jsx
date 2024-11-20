@@ -232,7 +232,7 @@ const GameComponent = () => {
                 <Card
                   key={player.id}
                   width="100%"
-                  bg={player.isHost ? "purple.50" : "gray.50"}
+                  bg={player.isHost ? "brand.50" : "brand.50"}
                   borderWidth={2}
                   borderColor={player.isHost ? "purple.200" : "gray.200"}
                 >
