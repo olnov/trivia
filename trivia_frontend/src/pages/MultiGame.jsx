@@ -162,9 +162,10 @@ const MultiGame = () => {
   };
 
   const handlePlayAgain = () => {
+    const difficulty = localStorage.getItem("difficulty");
     if (!roomCode) return;
     localStorage.setItem("gameStatus", "playing");
-    socket.emit("playAgain", { roomCode });
+    socket.emit("playAgain", { roomCode, difficulty });
     console.log("Play again requested");
   };
 
@@ -207,7 +208,11 @@ const MultiGame = () => {
                 </SimpleGrid>
                 {isHost && (
                   <>
-                    <Button colorScheme="blue" size="lg" onClick={handlePlayAgain}>
+                    <Button
+                      colorScheme="blue"
+                      size="lg"
+                      onClick={handlePlayAgain}
+                    >
                       Play Again
                     </Button>
                     <Button colorScheme="red" size="lg" onClick={handleEndGame}>
@@ -275,7 +280,8 @@ const MultiGame = () => {
                     transition="all 0.2s"
                     style={{
                       whiteSpace: "normal",
-                      wordWrap: "break-word"}}
+                      wordWrap: "break-word",
+                    }}
                   >
                     {option}
                   </Button>

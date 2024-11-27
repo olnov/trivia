@@ -10,7 +10,7 @@ const generateRoomCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
-const fetchQuestions = async (difficulty = "medium") => {
+const fetchQuestions = async (difficulty) => {
   try {
     const response = await fetch(
       `https://opentdb.com/api.php?amount=10&difficulty=${difficulty}&type=multiple`
@@ -121,7 +121,6 @@ const handleQuestionTimeout = (io, roomCode) => {
   }
 };
 
-
 // Added split of endGame and gameOver
 // gameOver handles the round play results,
 // while endGame closes the room, resets all the game statuses
@@ -139,8 +138,6 @@ const endGame = (io, roomCode) => {
   console.log("Room deleted:", roomCode);
 };
 
-
-
 const gameOver = (io, roomCode) => {
   const room = gameRooms.get(roomCode);
   if (!room) return;
@@ -155,18 +152,22 @@ const gameOver = (io, roomCode) => {
   room.status = "finished";
 };
 
-
 const setupSocket = (server) => {
   const io = new Server(server, {
-    cors: { origin: ["http://localhost:5173", "https://trivia-react-latest.onrender.com"] },
+    cors: {
+      origin: [
+        "http://localhost:5173",
+        "https://trivia-react-latest.onrender.com",
+      ],
+    },
   });
 
   // Log connection errors
   io.engine.on("connection_error", (err) => {
     console.log("Connection error occurred:");
-    console.log("Error code:", err.code); 
-    console.log("Error message:", err.message); 
-    console.log("Error context:", err.context); 
+    console.log("Error code:", err.code);
+    console.log("Error message:", err.message);
+    console.log("Error context:", err.context);
   });
 
   io.on("connection", (socket) => {
@@ -174,7 +175,7 @@ const setupSocket = (server) => {
     let currentRoom = null;
 
     // Handle room creation
-    socket.on("createRoom", ({ playerName }) => {
+    socket.on("createRoom", ({ playerName, difficulty }) => {
       if (currentRoom) {
         console.log("Player already in a room:", socket.id);
         return;
@@ -194,6 +195,7 @@ const setupSocket = (server) => {
         status: "waiting",
         questions: null,
         currentQuestion: 0,
+        difficulty,
       });
 
       currentRoom = roomCode;
@@ -321,8 +323,9 @@ const setupSocket = (server) => {
     });
 
     // Handle game start
-    socket.on("startGame", async ({ roomCode }) => {
+    socket.on("startGame", async ({ roomCode, difficulty }) => {
       console.log("Starting game for room:", roomCode);
+      console.log("Selected difficulty:", difficulty);
       const room = gameRooms.get(roomCode);
       if (!room) {
         console.error("Room not found:", roomCode);
@@ -336,7 +339,7 @@ const setupSocket = (server) => {
 
       try {
         console.log("Fetching questions...");
-        const questions = await fetchQuestions();
+        const questions = await fetchQuestions(difficulty);
         if (!questions || questions.length === 0) {
           throw new Error("Failed to fetch questions");
         }
@@ -414,7 +417,12 @@ const setupSocket = (server) => {
       player.score += isCorrect ? 1 : 0;
       player.answers.push({ answer, isCorrect });
 
-      console.log("Updated player score:", player.score, "IsCorrect:", isCorrect);
+      console.log(
+        "Updated player score:",
+        player.score,
+        "IsCorrect:",
+        isCorrect
+      );
 
       // Emit score update to all players
       io.to(roomCode).emit("scoreUpdate", { players: room.players });
@@ -441,7 +449,7 @@ const setupSocket = (server) => {
     });
 
     // Handle play again
-    socket.on("playAgain", async ({ roomCode }) => {
+    socket.on("playAgain", async ({ roomCode, difficulty }) => {
       console.log("Play again request for room:", roomCode);
       const room = gameRooms.get(roomCode);
       if (!room) {
@@ -450,7 +458,7 @@ const setupSocket = (server) => {
       }
 
       try {
-        const questions = await fetchQuestions();
+        const questions = await fetchQuestions(difficulty);
         if (!questions || questions.length === 0) {
           throw new Error("Failed to fetch questions");
         }
@@ -464,7 +472,6 @@ const setupSocket = (server) => {
           score: 0,
           answers: [],
         }));
-
 
         activeGames.set(roomCode, {
           timer: null,
@@ -483,26 +490,24 @@ const setupSocket = (server) => {
     });
 
     // Handle end game
-    socket.on('endGame', ({ roomCode }) => {
-      console.log('End game request received for room:', roomCode);
+    socket.on("endGame", ({ roomCode }) => {
+      console.log("End game request received for room:", roomCode);
       const room = gameRooms.get(roomCode);
       if (!room) {
-        socket.emit('error', { message: 'Room not found' });
+        socket.emit("error", { message: "Room not found" });
         return;
       }
 
       // Verify that the requester is the host
       const isHost = room.players.find((p) => p.id === socket.id && p.isHost);
       if (!isHost) {
-        socket.emit('error', { message: 'Only the host can end the game' });
+        socket.emit("error", { message: "Only the host can end the game" });
         return;
       }
 
       // Call the endGame function
       endGame(io, roomCode);
-
     });
-
   });
 
   return io;

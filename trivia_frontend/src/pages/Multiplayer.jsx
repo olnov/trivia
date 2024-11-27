@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../services/SocketService";
+
 import {
   Box,
   VStack,
@@ -13,17 +14,23 @@ import {
   Card,
   CardBody,
   Badge,
+  Center,
+  Select,
 } from "@chakra-ui/react";
+
 import { getUser } from "../services/UserService";
 
 const GameComponent = () => {
   const navigate = useNavigate();
+  const [difficulty, setDifficulty] = useState("easy");
   const [gameRoom, setGameRoom] = useState("");
   const [players, setPlayers] = useState([]);
   const [gameStatus, setGameStatus] = useState("waiting");
   const [isHost, setIsHost] = useState(false);
   const toast = useToast();
   const [userName, setUserName] = useState("");
+  const [error, setError] = useState("");
+  localStorage.setItem("difficulty", difficulty);
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -76,7 +83,7 @@ const GameComponent = () => {
       setPlayers(updatedPlayers);
       setGameRoom(roomCode);
       setIsHost(isHost);
-      localStorage.setItem("isHost",isHost);
+      localStorage.setItem("isHost", isHost);
       toast({
         title: "Joined room successfully!",
         status: "success",
@@ -84,7 +91,7 @@ const GameComponent = () => {
       });
     });
 
-    socket.on("playersUpdate", ({ players:updatedPlayers }) => {
+    socket.on("playersUpdate", ({ players: updatedPlayers }) => {
       console.log("Players updated:", updatedPlayers);
       setPlayers(updatedPlayers);
 
@@ -178,7 +185,13 @@ const GameComponent = () => {
 
     localStorage.setItem("currentGameRoom", gameRoom);
     localStorage.setItem("gameStatus", "playing");
-    socket.emit("startGame", { roomCode: gameRoom });
+    console.log("THIS IS US CHECKING THE ", difficulty);
+    socket.emit("startGame", { roomCode: gameRoom, difficulty });
+  };
+
+  const handleSelectDifficulty = (e) => {
+    e.preventDefault();
+    setDifficulty(e.target.value);
   };
 
   return (
@@ -186,6 +199,18 @@ const GameComponent = () => {
       <VStack spacing={8} align="stretch">
         <Heading textAlign="center">Multiplayer Trivia</Heading>
         <Card>
+          <Select
+            placeholder="Select difficulty"
+            onChange={handleSelectDifficulty}
+            value={difficulty}
+          >
+            <option value="easy" selected>
+              Easy
+            </option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </Select>
+
           <CardBody>
             <VStack spacing={4}>
               <Input
