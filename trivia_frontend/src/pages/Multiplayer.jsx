@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../services/SocketService";
+
 import {
   Box,
   VStack,
@@ -13,17 +14,44 @@ import {
   Card,
   CardBody,
   Badge,
+  Center,
+  Select,
 } from "@chakra-ui/react";
+
 import { getUser } from "../services/UserService";
 
 const GameComponent = () => {
   const navigate = useNavigate();
+  const [questions, setQuestions] = useState([]);
+  const [difficulty, setDifficulty] = useState("");
   const [gameRoom, setGameRoom] = useState("");
   const [players, setPlayers] = useState([]);
   const [gameStatus, setGameStatus] = useState("waiting");
   const [isHost, setIsHost] = useState(false);
   const toast = useToast();
   const [userName, setUserName] = useState("");
+  const [error, setError] = useState("");
+
+  // const fetchQuestions = async (selectedDifficulty) => {
+  //   try {
+  //     const response = await fetch(
+  //       `https://opentdb.com/api.php?amount=10&difficulty=${selectedDifficulty}&type=multiple`
+  //     );
+  //     const data = await response.json();
+  //     setDifficulty(selectedDifficulty);
+  //     setQuestions(data.results);
+  //     // setShuffledAnswers(
+  //     //   shuffleAnswers(
+  //     //     data.results[0].correct_answer,
+  //     //     data.results[0].incorrect_answers
+  //     //   )
+  //     // );
+  //     // setPlayerAnswers(Array(data.results.length).fill(null)); // Initialize playerAnswers array
+  //   } catch (err) {
+  //     setError(err.message || "Failed to fetch questions.");
+  //     console.error(err);
+  //   }
+  // };
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -76,7 +104,7 @@ const GameComponent = () => {
       setPlayers(updatedPlayers);
       setGameRoom(roomCode);
       setIsHost(isHost);
-      localStorage.setItem("isHost",isHost);
+      localStorage.setItem("isHost", isHost);
       toast({
         title: "Joined room successfully!",
         status: "success",
@@ -84,7 +112,7 @@ const GameComponent = () => {
       });
     });
 
-    socket.on("playersUpdate", ({ players:updatedPlayers }) => {
+    socket.on("playersUpdate", ({ players: updatedPlayers }) => {
       console.log("Players updated:", updatedPlayers);
       setPlayers(updatedPlayers);
 
@@ -178,7 +206,50 @@ const GameComponent = () => {
 
     localStorage.setItem("currentGameRoom", gameRoom);
     localStorage.setItem("gameStatus", "playing");
-    socket.emit("startGame", { roomCode: gameRoom });
+    console.log("THIS IS US CHECKING THE ", difficulty);
+    socket.emit("startGame", { roomCode: gameRoom, difficulty });
+  };
+
+  // if (questions.length === 0) {
+  //   return (
+  //     <>
+  //       <br></br>
+  //       <Center>
+  //         <Box boxShadow="base" p="6" rounded="md" width={"400px"}>
+  //           <div style={{ textAlign: "center" }}>
+  //             <Text fontSize={32}>Choose Difficulty</Text>
+  //             <br></br>
+  //           </div>
+  //           <div
+  //             style={{
+  //               display: "flex",
+  //               justifyContent: "center",
+  //               gap: "10px",
+  //               margin: "20px 0",
+  //             }}
+  //           >
+  //             <Button colorScheme="teal" onClick={() => fetchQuestions("easy")}>
+  //               Easy
+  //             </Button>
+  //             <Button
+  //               colorScheme="orange"
+  //               onClick={() => fetchQuestions("medium")}
+  //             >
+  //               Medium
+  //             </Button>
+  //             <Button colorScheme="red" onClick={() => fetchQuestions("hard")}>
+  //               Hard
+  //             </Button>
+  //           </div>
+  //         </Box>
+  //       </Center>
+  //     </>
+  //   );
+  // }
+
+  const handleSelectDifficulty = (e) => {
+    e.preventDefault();
+    setDifficulty(e.target.value);
   };
 
   return (
@@ -186,6 +257,18 @@ const GameComponent = () => {
       <VStack spacing={8} align="stretch">
         <Heading textAlign="center">Multiplayer Trivia</Heading>
         <Card>
+          <Select
+            placeholder="Select difficulty"
+            onChange={handleSelectDifficulty}
+            value={difficulty}
+          >
+            <option value="easy" selected>
+              Easy
+            </option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </Select>
+
           <CardBody>
             <VStack spacing={4}>
               <Input
