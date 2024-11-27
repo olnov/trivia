@@ -22,8 +22,7 @@ import { getUser } from "../services/UserService";
 
 const GameComponent = () => {
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState([]);
-  const [difficulty, setDifficulty] = useState("");
+  const [difficulty, setDifficulty] = useState("easy");
   const [gameRoom, setGameRoom] = useState("");
   const [players, setPlayers] = useState([]);
   const [gameStatus, setGameStatus] = useState("waiting");
@@ -31,27 +30,7 @@ const GameComponent = () => {
   const toast = useToast();
   const [userName, setUserName] = useState("");
   const [error, setError] = useState("");
-
-  // const fetchQuestions = async (selectedDifficulty) => {
-  //   try {
-  //     const response = await fetch(
-  //       `https://opentdb.com/api.php?amount=10&difficulty=${selectedDifficulty}&type=multiple`
-  //     );
-  //     const data = await response.json();
-  //     setDifficulty(selectedDifficulty);
-  //     setQuestions(data.results);
-  //     // setShuffledAnswers(
-  //     //   shuffleAnswers(
-  //     //     data.results[0].correct_answer,
-  //     //     data.results[0].incorrect_answers
-  //     //   )
-  //     // );
-  //     // setPlayerAnswers(Array(data.results.length).fill(null)); // Initialize playerAnswers array
-  //   } catch (err) {
-  //     setError(err.message || "Failed to fetch questions.");
-  //     console.error(err);
-  //   }
-  // };
+  localStorage.setItem("difficulty", difficulty);
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -209,43 +188,6 @@ const GameComponent = () => {
     console.log("THIS IS US CHECKING THE ", difficulty);
     socket.emit("startGame", { roomCode: gameRoom, difficulty });
   };
-
-  // if (questions.length === 0) {
-  //   return (
-  //     <>
-  //       <br></br>
-  //       <Center>
-  //         <Box boxShadow="base" p="6" rounded="md" width={"400px"}>
-  //           <div style={{ textAlign: "center" }}>
-  //             <Text fontSize={32}>Choose Difficulty</Text>
-  //             <br></br>
-  //           </div>
-  //           <div
-  //             style={{
-  //               display: "flex",
-  //               justifyContent: "center",
-  //               gap: "10px",
-  //               margin: "20px 0",
-  //             }}
-  //           >
-  //             <Button colorScheme="teal" onClick={() => fetchQuestions("easy")}>
-  //               Easy
-  //             </Button>
-  //             <Button
-  //               colorScheme="orange"
-  //               onClick={() => fetchQuestions("medium")}
-  //             >
-  //               Medium
-  //             </Button>
-  //             <Button colorScheme="red" onClick={() => fetchQuestions("hard")}>
-  //               Hard
-  //             </Button>
-  //           </div>
-  //         </Box>
-  //       </Center>
-  //     </>
-  //   );
-  // }
 
   const handleSelectDifficulty = (e) => {
     e.preventDefault();

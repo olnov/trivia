@@ -10,7 +10,7 @@ const generateRoomCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
-const fetchQuestions = async (difficulty = "medium") => {
+const fetchQuestions = async (difficulty) => {
   try {
     const response = await fetch(
       `https://opentdb.com/api.php?amount=10&difficulty=${difficulty}&type=multiple`
@@ -325,7 +325,7 @@ const setupSocket = (server) => {
     // Handle game start
     socket.on("startGame", async ({ roomCode, difficulty }) => {
       console.log("Starting game for room:", roomCode);
-      console.log("TESTING Selected Difficulty:", difficulty);
+      console.log("Selected difficulty:", difficulty);
       const room = gameRooms.get(roomCode);
       if (!room) {
         console.error("Room not found:", roomCode);
@@ -449,7 +449,7 @@ const setupSocket = (server) => {
     });
 
     // Handle play again
-    socket.on("playAgain", async ({ roomCode }) => {
+    socket.on("playAgain", async ({ roomCode, difficulty }) => {
       console.log("Play again request for room:", roomCode);
       const room = gameRooms.get(roomCode);
       if (!room) {
@@ -458,7 +458,7 @@ const setupSocket = (server) => {
       }
 
       try {
-        const questions = await fetchQuestions();
+        const questions = await fetchQuestions(difficulty);
         if (!questions || questions.length === 0) {
           throw new Error("Failed to fetch questions");
         }
