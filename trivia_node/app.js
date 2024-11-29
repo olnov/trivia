@@ -14,6 +14,7 @@ const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
 const gameQuestionRouter = require("./routes/gameQuestion");
+const profileImagesRouter = require("./routes/profileImages");
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/login", authRouter);
 app.use("/topscores", gameQuestionRouter);
+app.use("/profiles", profileImagesRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // catch 404 and forward to error handler

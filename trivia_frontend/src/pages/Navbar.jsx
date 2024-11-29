@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Logo from "../assets/images/octopus-logo.png";
 import { getUser } from "../services/UserService";
+import ProfileImage from "../components/Profile/ProfileImage";
 
 import {
   Box,
@@ -105,20 +106,12 @@ export default function Nav() {
                   cursor={"pointer"}
                   minW={0}
                 >
-                  <Avatar
-                    data-testid="avatar"
-                    size={"sm"}
-                    src={"https://bit.ly/sage-adebayo"}
-                  />
+                  <ProfileImage userId={user_id} size={"sm"} />
                 </MenuButton>
                 <MenuList alignItems={"center"}>
                   <br />
                   <Center>
-                    <Avatar
-                      data-testid="avatar"
-                      size={"2xl"}
-                      src={"https://bit.ly/sage-adebayo"}
-                    />
+                    <ProfileImage userId={user_id} size={"2xl"} />
                   </Center>
                   <br />
                   <Center>
@@ -126,7 +119,7 @@ export default function Nav() {
                   </Center>
                   <br />
                   <MenuDivider />
-                  <MenuItem>My Games</MenuItem>
+                  {/* <MenuItem>My Games</MenuItem> */}
                   <MenuItem onClick={handleProfileView}>My Profile</MenuItem>
                   <MenuItem data-testid="Logout-button" onClick={handleLogout}>
                     Logout

@@ -51,6 +51,25 @@ export const signUp = async (fullName, email, password) => {
 }
 
 
+export const updateUserProfile = async (id, token, fullName, password)=> {
+    const requestOptions = {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify({fullName, password}), 
+    };
+
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users/${id}`, requestOptions);
+    if (response.status === 200) {
+        return "User successfully updated";
+    } else {
+        throw new Error(`Error updating user: ${response.status}`);
+    }
+}
+
+
 export const isAuthenticated = () => {
     const token = localStorage.getItem("token"); // Assume JWT token is stored in localStorage
     if (token) {
