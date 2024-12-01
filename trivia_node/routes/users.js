@@ -5,7 +5,7 @@ const { createUser, getUserById, updateUserById, deleteUserById } = require("../
 
 router.post("/", createUser);
 router.get("/:id", tokenChecker, getUserById);
-router.put("/:id", tokenChecker, updateUserById);
+router.patch("/:id", tokenChecker, updateUserById);
 router.delete("/:id", tokenChecker, deleteUserById);
 
 module.exports = router;

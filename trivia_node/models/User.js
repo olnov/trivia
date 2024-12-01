@@ -29,6 +29,11 @@ const User = sequelize.define('User', {
             const rawDate = this.getDataValue('registered_at');
             return rawDate ? rawDate.toISOString().split('T')[0] : null;
         },
+    },
+    profileImage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'profile_image',
     }
 }, {
     tableName: 'users',
