@@ -13,17 +13,24 @@ This is a full-stack Trivia Game application built with a SpringBoot backend and
 
 ## Tech Stack
 
-### Backend (API)
+### Backend API (Legacy)
 - Java
 - Spring Boot
 - JPA/Hibernate
 - H2 Database (for development)
 - REST API
 
+### Backend API ExpressJS
+ - ExpressJS
+ - Sequelize
+ - Socket.io
+ - PostgreSQL
+ - SwaggerUI
+
 ### Frontend (UI)
-- React.js
+- React (ViteJS)
 - JavaScript (ES6+)
-- CSS Modules
+- ChakraUI
 
 ## Backend Structure
 
