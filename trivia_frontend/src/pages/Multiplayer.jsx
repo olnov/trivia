@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../services/SocketService";
+import Search from "../components/Search/Search";
 
 import {
   Box,
@@ -14,8 +15,8 @@ import {
   Card,
   CardBody,
   Badge,
-  Center,
   Select,
+  FormLabel,
 } from "@chakra-ui/react";
 
 import { getUser } from "../services/UserService";
@@ -29,7 +30,6 @@ const GameComponent = () => {
   const [isHost, setIsHost] = useState(false);
   const toast = useToast();
   const [userName, setUserName] = useState("");
-  const [error, setError] = useState("");
   localStorage.setItem("difficulty", difficulty);
 
   useEffect(() => {
@@ -197,28 +197,28 @@ const GameComponent = () => {
   return (
     <Box p={8}>
       <VStack spacing={8} align="stretch">
-        <Heading textAlign="center">Multiplayer Trivia</Heading>
+        <Heading textAlign="center">Multiplayer Quizzard</Heading>
         <Card>
-          <Select
-            placeholder="Select difficulty"
-            onChange={handleSelectDifficulty}
-            value={difficulty}
-          >
-            <option value="easy" selected>
-              Easy
-            </option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </Select>
-
           <CardBody>
-            <VStack spacing={4}>
+            <VStack spacing={2}>
+              <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Game difficulty:</Text>
+              <Select
+                onChange={handleSelectDifficulty}
+                value={difficulty}
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </Select>
+              <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Invite people:</Text>
+              <Search />
+              {/* <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Enter room code or click "Create Game":</Text>
               <Input
                 placeholder="Enter game room code"
                 value={gameRoom}
                 onChange={(e) => setGameRoom(e.target.value)}
                 isDisabled={players.length > 0}
-              />
+              /> */}
               <HStack spacing={4}>
                 <Button
                   colorScheme="blue"

@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const tokenChecker = require('../middleware/tokenChecker');
-const { createUser, getUserById, updateUserById, deleteUserById } = require("../controllers/User");
+const { createUser, getUserById, updateUserById, deleteUserById, getUserByPartialName } = require("../controllers/User");
 
+// search
+router.post("/search", getUserByPartialName);
 router.post("/", createUser);
 router.get("/:id", tokenChecker, getUserById);
 router.patch("/:id", tokenChecker, updateUserById);

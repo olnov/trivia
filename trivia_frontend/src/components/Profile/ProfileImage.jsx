@@ -3,10 +3,10 @@ import { Avatar } from "@chakra-ui/react";
 import useProfileImageStore from "../../stores/profileImageStore";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const IMAGE_PLACEHOLDER = "https://bit.ly/sage-adebayo";
 
 const ProfileImage = ({ userId, size }) => {
     const [imageSrc,setImageSrc] = useState(null);
+    const [userName, setUserName] = useState("");
     const imageVersion = useProfileImageStore((state)=>state.imageVersion) ?? 0;
 
 
@@ -14,18 +14,20 @@ const ProfileImage = ({ userId, size }) => {
         const fetchProfileImage = async () => {
             const response = await fetch(`${BACKEND_URL}/profiles/${userId}`);
             const data = await response.json();
+            
             if (data.imageUrl) {
                 setImageSrc(data.imageUrl + "?v" + imageVersion);
+                setUserName(data.fullName);
             } else {
-                setImageSrc(IMAGE_PLACEHOLDER);
+                setUserName(data.fullName);
             }
         }
         fetchProfileImage();
-    },[userId, imageVersion]);
+    },[userId, imageVersion, userName]);
 
     return (
         <>
-            <Avatar size={size} src={imageSrc}>
+            <Avatar size={size} name={userName} src={imageSrc}>
             </Avatar>
         </>
     )
