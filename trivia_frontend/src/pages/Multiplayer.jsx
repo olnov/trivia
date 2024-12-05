@@ -196,8 +196,8 @@ const GameComponent = () => {
 
   return (
     <Box p={8}>
-      <VStack spacing={8} align="stretch">
-        <Heading textAlign="center">Multiplayer Quizzard</Heading>
+      <VStack spacing={8} align="stretch" overflowY={'auto'}>
+        <Text textAlign="center" fontSize={'xl'} as={'b'}>Multiplayer Quizzard</Text>
         <Card>
           <CardBody>
             <VStack spacing={2}>
