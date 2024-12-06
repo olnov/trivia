@@ -257,6 +257,7 @@ const setupSocket = (server) => {
     // Handle disconnection
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
+     
       if (!currentRoom) return;
 
       const room = gameRooms.get(currentRoom);

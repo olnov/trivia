@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Logo from "../assets/images/octopus-logo.png";
 import { getUser } from "../services/UserService";
 import ProfileImage from "../components/Profile/ProfileImage";
+import useLoggedInStore from "../stores/loggedInStore";
 
 import {
   Box,
@@ -57,10 +58,13 @@ export default function Nav() {
   };
 
   const handleLogout = () => {
+    const setLoggedInPlayers = useLoggedInStore.getState().setLoggedInPlayers;
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
     localStorage.removeItem("currentGameRoom");
     localStorage.removeItem("gameStatus");
+    setLoggedInPlayers([]);
+    localStorage.removeItem("logged-in-players");
     navigate("/login");
   };
 

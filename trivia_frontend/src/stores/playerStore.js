@@ -1,3 +1,5 @@
+// #### Use this state to store a list of invited playes
+
 import { create } from 'zustand';
 
 const usePlayerStore = create((set)=> ({

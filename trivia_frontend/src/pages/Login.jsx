@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser, login, isAuthenticated } from "../services/UserService";
 import socket from "../services/SocketService";
+import useLoggedInStore from "../stores/loggedInStore";
 import "./Style.css";
 
 const Login = () => {
@@ -21,15 +22,6 @@ const Login = () => {
   const [error, setError] = useState("");
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
-
-  //Add background
-  // useEffect(() => {
-  //     document.body.classList.add('page-background');
-
-  //     return () => {
-  //         document.body.classList.remove('page-background');
-  //     };
-  // }, []);
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
@@ -50,14 +42,16 @@ const Login = () => {
 
   useEffect(() => {
     storageCheck();
-  }, []);
+  });
 
   const getLoggedIn = async (e) => {
     e.preventDefault();
     try {
+      const addLoggedInPlayer = useLoggedInStore.getState().addLoggedInPlayer;
       const data = await login(email, password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
+      addLoggedInPlayer(data.userId);
       navigate("/home");
     } catch (err) {
       const errorMessage =

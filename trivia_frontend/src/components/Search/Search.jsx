@@ -16,13 +16,13 @@ import usePlayerStore from "../../stores/playerStore";
 const Search = () => {
     const [playerName, setPlayerName] = useState("");
     const [searchResults, setSearchResults] = useState([]);
-    const [invitedPlayers, setInvitedPlayers] = useState([]); 
+    // const [invitedPlayers, setInvitedPlayers] = useState([]); 
     const toast = useToast();
 
-    // const selectedPlayers = usePlayerStore((state) => state.selectedPlayers);
-    // const addPlayer = usePlayerStore((state) => state.addPlayer);
-    // const removePlayer = usePlayerStore((state) => state.removePlayer);
-    // const maxPlayers = usePlayerStore((state) => state.maxPlayers);
+    const selectedPlayers = usePlayerStore((state) => state.selectedPlayers);
+    const addPlayer = usePlayerStore((state) => state.addPlayer);
+    const removePlayer = usePlayerStore((state) => state.removePlayer);
+    const maxPlayers = usePlayerStore((state) => state.maxPlayers);
 
     const fetchSearchResults = async () => {
         const players = await searchPlayers(playerName);
@@ -33,8 +33,25 @@ const Search = () => {
         fetchSearchResults();
     };
 
-    const invitePlayer = (id) => {
-        if (invitedPlayers.length >= 3) {
+    // const invitePlayer = (id) => {
+    //     if (invitedPlayers.length >= 3) {
+    //         toast({
+    //             title: 'Multiplayer',
+    //             description: 'There should be 4 players in total, including host',
+    //             status: 'warning',
+    //             duration: 9000,
+    //             isClosable: true,
+    //         });
+    //         return;
+    //     }
+
+    //     // Move player from search results to invited players
+    //     setSearchResults((prev) => prev.filter((player) => player.id !== id));
+    //     setInvitedPlayers((prev) => [...prev, searchResults.find((player) => player.id === id)]);
+    // };
+
+    const invitePlayer = (player) => {
+        if (selectedPlayers.length >= maxPlayers) {
             toast({
                 title: 'Multiplayer',
                 description: 'There should be 4 players in total, including host',
@@ -44,17 +61,22 @@ const Search = () => {
             });
             return;
         }
-
-        // Move player from search results to invited players
-        setSearchResults((prev) => prev.filter((player) => player.id !== id));
-        setInvitedPlayers((prev) => [...prev, searchResults.find((player) => player.id === id)]);
+        addPlayer(player);
+        setSearchResults((prev) => prev.filter((p) => p.id !== player.id));
     };
 
-    const removePlayer = (id) => {
-        // Move player from invited list back to search results
-        setInvitedPlayers((prev) => prev.filter((player) => player.id !== id));
-        setSearchResults((prev) => [...prev, invitedPlayers.find((player) => player.id === id)]);
+    // const removePlayer = (id) => {
+    //     // Move player from invited list back to search results
+    //     setInvitedPlayers((prev) => prev.filter((player) => player.id !== id));
+    //     setSearchResults((prev) => [...prev, invitedPlayers.find((player) => player.id === id)]);
+    // };
+
+    const removePlayerFromList = (id) => {
+        const player = selectedPlayers.find((p) => p.id === id);
+        removePlayer(id);
+        setSearchResults((prev) => [...prev, player]);
     };
+
 
     return (
         <>
@@ -94,7 +116,8 @@ const Search = () => {
                             bg="white"
                             boxShadow="md"
                             cursor="pointer"
-                            onClick={() => invitePlayer(item.id)} // Add to invitation list
+                            // onClick={() => invitePlayer(item.id)}
+                            onClick={()=> invitePlayer(item)} 
                         >
                             <HStack justifyContent="space-between" width="100%">
                                 <VStack align="flex-start" spacing={0}>
@@ -127,7 +150,7 @@ const Search = () => {
                     height={'200px'}
                     overflowY={'auto'}
                 >
-                    {invitedPlayers.map((item) => (
+                    {selectedPlayers.map((item) => ( //Was invitedPlayers.map((item))
                         <Card
                             key={item.id}
                             p={4}
@@ -136,7 +159,8 @@ const Search = () => {
                             bg="blue.50"
                             boxShadow="md"
                             cursor="pointer"
-                            onClick={() => removePlayer(item.id)} // Remove from invitation list
+                            // onClick={() => removePlayer(item.id)} 
+                            onClick={()=> removePlayerFromList(item.id)}
                         >
                             <HStack justifyContent="space-between" width="100%">
                                 <VStack align="flex-start" spacing={0}>
@@ -149,7 +173,7 @@ const Search = () => {
                     ))}
                 </VStack>
                 <Text fontSize={'sm'}>
-                    Players to invite: {invitedPlayers.length}
+                    Players to invite: {selectedPlayers.length}
                 </Text>
                 </VStack>
             </Flex>

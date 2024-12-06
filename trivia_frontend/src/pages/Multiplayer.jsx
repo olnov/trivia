@@ -185,7 +185,6 @@ const GameComponent = () => {
 
     localStorage.setItem("currentGameRoom", gameRoom);
     localStorage.setItem("gameStatus", "playing");
-    console.log("THIS IS US CHECKING THE ", difficulty);
     socket.emit("startGame", { roomCode: gameRoom, difficulty });
   };
 
@@ -195,8 +194,8 @@ const GameComponent = () => {
   };
 
   return (
-    <Box p={8}>
-      <VStack spacing={8} align="stretch" overflowY={'auto'}>
+    <Box p={8} height="100vh" overflowY="auto">
+      <VStack spacing={8} align="stretch">
         <Text textAlign="center" fontSize={'xl'} as={'b'}>Multiplayer Quizzard</Text>
         <Card>
           <CardBody>
