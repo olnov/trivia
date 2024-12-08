@@ -6,12 +6,15 @@ import {
     Card,
     Text,
     Flex,
-    useToast
+    useToast,
+    Badge,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { searchPlayers } from "../../services/UserService";
 import ProfileImage from "../Profile/ProfileImage";
 import usePlayerStore from "../../stores/playerStore";
+import useLoggedInStore from "../../stores/loggedInStore";
+import { getNamespaceSocket, connectNamespaceSocket } from "../../services/SocketService";
 
 const Search = () => {
     const [playerName, setPlayerName] = useState("");
@@ -23,6 +26,7 @@ const Search = () => {
     const addPlayer = usePlayerStore((state) => state.addPlayer);
     const removePlayer = usePlayerStore((state) => state.removePlayer);
     const maxPlayers = usePlayerStore((state) => state.maxPlayers);
+    const loggedInPlayers = useLoggedInStore((state) => state.loggedInPlayers);
 
     const fetchSearchResults = async () => {
         const players = await searchPlayers(playerName);
@@ -96,85 +100,99 @@ const Search = () => {
                 {/* Search Results Column */}
                 <VStack width={'50%'} align={'stretch'}>
                     <Text fontSize={'sm'} as={'b'}>Search results</Text>
-                <VStack
-                    width="100%"
-                    align="stretch"
-                    spacing={4}
-                    border="1px solid"
-                    borderColor="gray.200"
-                    p={4}
-                    borderRadius="md"
-                    height={'200px'}
-                    overflowY={'auto'}
-                >
-                    {searchResults.map((item) => (
-                        <Card
-                            key={item.id}
-                            p={4}
-                            border="1px solid"
-                            borderColor="gray.200"
-                            bg="white"
-                            boxShadow="md"
-                            cursor="pointer"
-                            // onClick={() => invitePlayer(item.id)}
-                            onClick={()=> invitePlayer(item)} 
-                        >
-                            <HStack justifyContent="space-between" width="100%">
-                                <VStack align="flex-start" spacing={0}>
-                                    <Text fontWeight="bold">{item.fullName}</Text>
-                                    <Text fontSize="sm">Status: Offline</Text>
-                                </VStack>
-                                <ProfileImage userId={item.id} size="sm" />
-                            </HStack>
-                        </Card>
-                    ))}
-                </VStack>
-                <Text fontSize={'sm'}>
-                    Players found: {searchResults.length}
-                </Text>
+                    <VStack
+                        width="100%"
+                        align="stretch"
+                        spacing={4}
+                        border="1px solid"
+                        borderColor="gray.200"
+                        p={4}
+                        borderRadius="md"
+                        height={'200px'}
+                        overflowY={'auto'}
+                    >
+                        {searchResults.map((item) => (
+                            <Card
+                                key={item.id}
+                                p={4}
+                                border="1px solid"
+                                borderColor="gray.200"
+                                bg="white"
+                                boxShadow="md"
+                                cursor="pointer"
+                                // onClick={() => invitePlayer(item.id)}
+                                onClick={() => invitePlayer(item)}
+                            >
+                                <HStack justifyContent="space-between" width="100%">
+                                    <VStack align="flex-start" spacing={0}>
+                                        <Text fontWeight="bold">{item.fullName}</Text>
+                                        <Text fontSize="sm">
+                                            Status:{" "}
+                                            {loggedInPlayers.includes(item.id) ? (
+                                                <Badge colorScheme="green">Online</Badge>
+                                            ) : (
+                                                <Badge>Offline</Badge>
+                                            )}
+                                        </Text>
+                                    </VStack>
+                                    <ProfileImage userId={item.id} size="sm" />
+                                </HStack>
+                            </Card>
+                        ))}
+                    </VStack>
+                    <Text fontSize={'sm'}>
+                        Players found: {searchResults.length}
+                    </Text>
                 </VStack>
 
                 {/* Invitation List Column */}
                 <VStack width={'50%'} align={'stretch'}>
-                <Text fontSize={'sm'} as={'b'}>
+                    <Text fontSize={'sm'} as={'b'}>
                         Invitation List
                     </Text>
-                <VStack
-                    width="100%"
-                    align="stretch"
-                    spacing={4}
-                    border="1px solid"
-                    borderColor="gray.200"
-                    p={4}
-                    borderRadius="md"
-                    height={'200px'}
-                    overflowY={'auto'}
-                >
-                    {selectedPlayers.map((item) => ( //Was invitedPlayers.map((item))
-                        <Card
-                            key={item.id}
-                            p={4}
-                            border="1px solid"
-                            borderColor="blue.500"
-                            bg="blue.50"
-                            boxShadow="md"
-                            cursor="pointer"
-                            // onClick={() => removePlayer(item.id)} 
-                            onClick={()=> removePlayerFromList(item.id)}
-                        >
-                            <HStack justifyContent="space-between" width="100%">
-                                <VStack align="flex-start" spacing={0}>
-                                    <Text fontWeight="bold">{item.fullName}</Text>
-                                    <Text fontSize="sm">Status: Offline</Text>
-                                </VStack>
-                                <ProfileImage userId={item.id} size="sm" />
-                            </HStack>
-                        </Card>
-                    ))}
-                </VStack>
-                <Text fontSize={'sm'}>
-                    Players to invite: {selectedPlayers.length}
-                </Text>
+                    <VStack
+                        width="100%"
+                        align="stretch"
+                        spacing={4}
+                        border="1px solid"
+                        borderColor="gray.200"
+                        p={4}
+                        borderRadius="md"
+                        height={'200px'}
+                        overflowY={'auto'}
+                    >
+                        {selectedPlayers.map((item) => ( //Was invitedPlayers.map((item))
+                            <Card
+                                key={item.id}
+                                p={4}
+                                border="1px solid"
+                                borderColor="blue.500"
+                                bg="blue.50"
+                                boxShadow="md"
+                                cursor="pointer"
+                                // onClick={() => removePlayer(item.id)} 
+                                onClick={() => removePlayerFromList(item.id)}
+                            >
+                                <HStack justifyContent="space-between" width="100%">
+                                    <VStack align="flex-start" spacing={0}>
+                                        <Text fontWeight="bold">{item.fullName}</Text>
+                                        <Text fontSize="sm">
+                                            Status:{" "}
+                                            {loggedInPlayers.includes(item.id) ? (
+                                                <Badge colorScheme="green">Online</Badge>
+                                            ) : (
+                                                <Badge>Offline</Badge>
+                                            )}
+                                        </Text>
+                                    </VStack>
+                                    <ProfileImage userId={item.id} size="sm" />
+                                </HStack>
+                            </Card>
+                        ))}
+                    </VStack>
+                    <Text fontSize={'sm'}>
+                        Players to invite: {selectedPlayers.length}
+                    </Text>
                 </VStack>
             </Flex>
         </>

@@ -6,12 +6,21 @@ const useLoggedInStore = create(
     (set) => ({
       loggedInPlayers: [],
 
-      setLoggedInPlayers: (players) => set({ loggedInPlayers: players }),
+      setLoggedInPlayers: (players) => {
+        console.log("Updating Zustand store with players:", players); 
+        set({ loggedInPlayers: players });
+      },
 
       addLoggedInPlayer: (player) =>
-        set((state) => ({
-          loggedInPlayers: [...state.loggedInPlayers, player],
-        })),
+        set((state) => {
+          const exists = state.loggedInPlayers.some(
+            (p) => p.userId === player.userId
+          );
+          if (!exists) {
+            return { loggedInPlayers: [...state.loggedInPlayers, player] };
+          }
+          return state; 
+        }),
 
       removeLoggedInPlayer: (userId) =>
         set((state) => ({

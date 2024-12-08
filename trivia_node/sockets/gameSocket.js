@@ -158,6 +158,7 @@ const setupSocket = (server) => {
       origin: [
         "http://localhost:5173",
         "https://trivia-react-latest.onrender.com",
+        "http://localhost:4173",
       ],
     },
   });

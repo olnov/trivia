@@ -7,6 +7,7 @@ const app = require("../app");
 const debug = require("debug")("node-test:server");
 const http = require("http");
 const setupSocket = require("../sockets/gameSocket");
+const setupUserSocket = require("../sockets/userSocket");
 
 /**
  * Get port from environment and store in Express.
@@ -24,6 +25,7 @@ const server = http.createServer(app);
  * Initialize Socket.io.
  */
 const io = setupSocket(server);
+setupUserSocket(io);
 
 /**
  * Listen on provided port, on all network interfaces.

@@ -12,7 +12,7 @@ import Logo from "../assets/images/octopus-logo.png";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser, login, isAuthenticated } from "../services/UserService";
-import socket from "../services/SocketService";
+import socket, { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
 import useLoggedInStore from "../stores/loggedInStore";
 import "./Style.css";
 
@@ -27,6 +27,8 @@ const Login = () => {
   const token = localStorage.getItem("token");
   const currentGameRoom = localStorage.getItem("currentGameRoom");
   const gameStatus = localStorage.getItem("gameStatus");
+  // const loggedInPlayers = useLoggedInStore((state) => state.loggedInPlayers);
+  
 
   const storageCheck = async () => {
     if (userId && token && isAuthenticated()) {
@@ -42,16 +44,22 @@ const Login = () => {
 
   useEffect(() => {
     storageCheck();
-  });
+  },[currentGameRoom, gameStatus, userId, token, navigate]);
 
   const getLoggedIn = async (e) => {
     e.preventDefault();
     try {
+      const userSocket = getNamespaceSocket("/user");
+      connectNamespaceSocket("/user");
       const addLoggedInPlayer = useLoggedInStore.getState().addLoggedInPlayer;
       const data = await login(email, password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
-      addLoggedInPlayer(data.userId);
+      userSocket.emit("user-online",data.userId);
+      userSocket.on("updateUsersOnline", (users) => {
+        addLoggedInPlayer(users);
+        console.log("[From login] Online users:", users);
+      });
       navigate("/home");
     } catch (err) {
       const errorMessage =

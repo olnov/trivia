@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import socket from "../services/SocketService";
+import socket, { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
 import Search from "../components/Search/Search";
+
 
 import {
   Box,
@@ -31,6 +32,7 @@ const GameComponent = () => {
   const toast = useToast();
   const [userName, setUserName] = useState("");
   localStorage.setItem("difficulty", difficulty);
+  
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -211,13 +213,13 @@ const GameComponent = () => {
               </Select>
               <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Invite people:</Text>
               <Search />
-              {/* <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Enter room code or click "Create Game":</Text>
+              <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Enter room code or click "Create Game":</Text>
               <Input
                 placeholder="Enter game room code"
                 value={gameRoom}
                 onChange={(e) => setGameRoom(e.target.value)}
                 isDisabled={players.length > 0}
-              /> */}
+              />
               <HStack spacing={4}>
                 <Button
                   colorScheme="blue"
