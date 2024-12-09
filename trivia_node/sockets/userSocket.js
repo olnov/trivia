@@ -13,8 +13,23 @@ const setupUserSocket = (io) => {
             userNamespace.emit("updateUsersOnline", Array.from(onlineUsers.values()));
         });
 
+        socket.on("user-offline", (userId)=> {
+            if (onlineUsers.has(socket.id)) {
+                onlineUsers.delete(socket.id);
+            }
+
+            userNamespace.emit("updateUsersOnline", Array.from(onlineUsers.values()));
+            console.log(`User ${userId} gone offline`);
+        });
+
         socket.on("disconnect", () => {
             console.log("[Info user namespace] User disconnected from namespace:", socket.id);
+
+            if (onlineUsers.has(socket.id)) {
+                onlineUsers.delete(socket.id);
+            }
+
+            userNamespace.emit("updateUsersOnline", Array.from(onlineUsers.values()));
         });
     });
 

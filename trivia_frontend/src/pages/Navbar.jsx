@@ -4,6 +4,7 @@ import Logo from "../assets/images/octopus-logo.png";
 import { getUser } from "../services/UserService";
 import ProfileImage from "../components/Profile/ProfileImage";
 import useLoggedInStore from "../stores/loggedInStore";
+import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
 
 import {
   Box,
@@ -52,18 +53,23 @@ export default function Nav() {
 
   const user_id = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
+  const removeLoggedInPlayer = useLoggedInStore((state) => state.removeLoggedInPlayer);
 
   const handleProfileView = () => {
     navigate("/profile");
   };
 
   const handleLogout = () => {
-    const setLoggedInPlayers = useLoggedInStore.getState().setLoggedInPlayers;
+    const userSocket = getNamespaceSocket("/user");
+    removeLoggedInPlayer(user_id);
+    userSocket.emit("user-offline", user_id);
+    // userSocket.on("updateUsersOnline", (users) => {
+    //   console.log("[From logout] Online users:", users);
+    // });
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
     localStorage.removeItem("currentGameRoom");
     localStorage.removeItem("gameStatus");
-    setLoggedInPlayers([]);
     localStorage.removeItem("logged-in-players");
     navigate("/login");
   };

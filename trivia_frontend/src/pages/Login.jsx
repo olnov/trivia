@@ -55,7 +55,7 @@ const Login = () => {
       const data = await login(email, password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
-      userSocket.emit("user-online",data.userId);
+      userSocket.emit("user-online", data.userId);
       userSocket.on("updateUsersOnline", (users) => {
         addLoggedInPlayer(users);
         console.log("[From login] Online users:", users);
