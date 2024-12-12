@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import socket, { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
+import socket from "../services/SocketService";
 import Search from "../components/Search/Search";
+import useUserSocketStore from "../stores/userSocketStore";
+import useMessageStore from "../stores/messageStore";
 
 
 import {
@@ -32,7 +34,10 @@ const GameComponent = () => {
   const toast = useToast();
   const [userName, setUserName] = useState("");
   localStorage.setItem("difficulty", difficulty);
-  
+  const userSocket = useUserSocketStore((state) => state.userSocket);
+  const addMessages = useMessageStore((state) => state.addMessages);
+
+
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -56,6 +61,15 @@ const GameComponent = () => {
     const currentRoom = localStorage.getItem("currentGameRoom");
     if (currentRoom) {
       setGameRoom(currentRoom);
+    }
+
+    if (userSocket) {
+      const handleResponse = (message) => {
+        console.log("Response received:", message);
+        addMessages([message]);
+      };
+
+      userSocket.on("messaging", handleResponse);
     }
 
     if (!socket.connected) {
@@ -138,8 +152,17 @@ const GameComponent = () => {
       socket.off("playersUpdate");
       socket.off("gameStatusUpdate");
       socket.off("error");
+      userSocket.off("messaging");
     };
-  }, [navigate, toast, gameRoom, gameStatus]);
+  }, [navigate, toast, gameRoom, gameStatus, userSocket]);
+
+  const handleSendInvite = () => {
+    userSocket.emit("invitation", `You are invited by ${userName} to play game`);
+    console.log("Inivtation clicked");
+    // userSocket.on("messaging", (message)=> {
+    //   console.log(message);
+    // });
+  }
 
   const handleCreateGame = () => {
     if (!userName) {
@@ -244,6 +267,9 @@ const GameComponent = () => {
                     Start Game
                   </Button>
                 )}
+                <Button onClick={handleSendInvite}>
+                  Send invite
+                </Button>
               </HStack>
             </VStack>
           </CardBody>

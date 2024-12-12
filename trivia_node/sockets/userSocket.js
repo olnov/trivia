@@ -22,6 +22,19 @@ const setupUserSocket = (io) => {
             console.log(`User ${userId} gone offline`);
         });
 
+        socket.on("invitation", (message)=> {
+            console.log("Invitation recieved: ", message);
+            console.log("Online users: ", Array.from(onlineUsers.values()));
+            console.log("Connected sockets:", Array.from(io.sockets.sockets.keys()));
+            console.log("Online users:", Array.from(onlineUsers.values()));
+            console.log("Online users keys:", Array.from(onlineUsers.keys()));
+            Array.from(onlineUsers.keys()).forEach((userId) => {
+                userNamespace.to(userId).emit("messaging", message);
+                console.log(`Message sent to userId ${userId}:`, message);
+            });
+            // userNamespace.emit("messaging", message);
+        });
+
         socket.on("disconnect", () => {
             console.log("[Info user namespace] User disconnected from namespace:", socket.id);
 

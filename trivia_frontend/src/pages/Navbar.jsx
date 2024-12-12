@@ -5,6 +5,7 @@ import { getUser } from "../services/UserService";
 import ProfileImage from "../components/Profile/ProfileImage";
 import useLoggedInStore from "../stores/loggedInStore";
 import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
+import useMessageStore from "../stores/messageStore";
 
 import {
   Box,
@@ -22,8 +23,15 @@ import {
   Stack,
   useColorMode,
   Center,
+  IconButton,
+  Popover,
+  PopoverTrigger,
+  PopoverHeader,
+  PopoverCloseButton,
+  PopoverBody,
+  PopoverContent,
 } from "@chakra-ui/react";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { MoonIcon, SunIcon, BellIcon } from "@chakra-ui/icons";
 
 const NavLink = ({ children }) => {
   return (
@@ -54,6 +62,7 @@ export default function Nav() {
   const user_id = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
   const removeLoggedInPlayer = useLoggedInStore((state) => state.removeLoggedInPlayer);
+  const storedMessages = useMessageStore((state) => state.storedMessages);
 
   const handleProfileView = () => {
     navigate("/profile");
@@ -77,7 +86,7 @@ export default function Nav() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = await getUser(user_id,token);
+        const userData = await getUser(user_id, token);
         setUsername(userData.fullName);
       } catch (error) {
         console.error(error);
@@ -104,6 +113,44 @@ export default function Nav() {
 
           <Flex alignItems={"center"}>
             <Stack direction={"row"} spacing={7}>
+              {/* <Button>
+                <BellIcon />
+              </Button> */}
+              <Box position="relative" display="inline-block">
+                <Popover>
+                <PopoverTrigger>
+                <IconButton
+                  icon={<BellIcon />}
+                  aria-label="Notifications"
+                  variant="ghost"
+                  size="lg"
+                />
+                </PopoverTrigger>
+                {storedMessages.length > 0 && (
+                <Box
+                  position="absolute"
+                  top="4px"
+                  right="4px"
+                  width="10px"
+                  height="10px"
+                  bg="red.500"
+                  borderRadius="full"
+                  border="2px solid"
+                  borderColor="white"
+                />
+                )}
+                <PopoverContent>
+                  <PopoverHeader fontWeight="semibold">Notifications</PopoverHeader>
+                  <PopoverCloseButton />
+                  <PopoverBody>
+                    {/* {storedMessages.map((message) => (
+                      <Text key={message.id}>{message.text}</Text>
+                    ))} */}
+                    {storedMessages[storedMessages.length - 1]}
+                  </PopoverBody>
+                </PopoverContent>
+                </Popover>
+              </Box>
               <Button data-testid="dark-mode" onClick={toggleColorMode}>
                 {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
               </Button>
