@@ -14,7 +14,7 @@ import { searchPlayers } from "../../services/UserService";
 import ProfileImage from "../Profile/ProfileImage";
 import usePlayerStore from "../../stores/playerStore";
 import useLoggedInStore from "../../stores/loggedInStore";
-import { getNamespaceSocket, connectNamespaceSocket } from "../../services/SocketService";
+
 
 const Search = () => {
     const [playerName, setPlayerName] = useState("");
@@ -27,6 +27,7 @@ const Search = () => {
     const removePlayer = usePlayerStore((state) => state.removePlayer);
     const maxPlayers = usePlayerStore((state) => state.maxPlayers);
     const loggedInPlayers = useLoggedInStore((state) => state.loggedInPlayers);
+    
 
     const fetchSearchResults = async () => {
         const players = await searchPlayers(playerName);

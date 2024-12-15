@@ -30,6 +30,7 @@ import {
   PopoverCloseButton,
   PopoverBody,
   PopoverContent,
+  PopoverFooter,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon, BellIcon } from "@chakra-ui/icons";
 
@@ -63,6 +64,9 @@ export default function Nav() {
   const token = localStorage.getItem("token");
   const removeLoggedInPlayer = useLoggedInStore((state) => state.removeLoggedInPlayer);
   const storedMessages = useMessageStore((state) => state.storedMessages);
+  const addMessages = useMessageStore((state) => state.addMessages);
+  const clearMessages = useMessageStore((state) => state.clearMessages);
+  const userSocket = getNamespaceSocket("/user");
 
   const handleProfileView = () => {
     navigate("/profile");
@@ -80,6 +84,8 @@ export default function Nav() {
     localStorage.removeItem("currentGameRoom");
     localStorage.removeItem("gameStatus");
     localStorage.removeItem("logged-in-players");
+    localStorage.removeItem("difficulty");
+    localStorage.removeItem("message-store");
     navigate("/login");
   };
 
@@ -93,7 +99,22 @@ export default function Nav() {
       }
     };
     fetchData();
-  }, [user_id]);
+
+    connectNamespaceSocket("/user");
+    if (userSocket) {
+      const handleResponse = (message) => {
+        console.log("Response received:", message);
+        addMessages([message]);
+      };
+
+      userSocket.on("messaging", handleResponse);
+    }
+  }, [user_id, storedMessages]);
+
+  const handleClearMessages = () => {
+    clearMessages();
+    localStorage.removeItem("message-store");
+  };
 
   return (
     <>
@@ -143,11 +164,13 @@ export default function Nav() {
                   <PopoverHeader fontWeight="semibold">Notifications</PopoverHeader>
                   <PopoverCloseButton />
                   <PopoverBody>
-                    {/* {storedMessages.map((message) => (
-                      <Text key={message.id}>{message.text}</Text>
-                    ))} */}
-                    {storedMessages[storedMessages.length - 1]}
+                    {storedMessages[storedMessages.length - 1] || "No new notifications"}
                   </PopoverBody>
+                  <PopoverFooter>
+                  <Button colorScheme="blue" size="sm" onClick={handleClearMessages}>
+                    Clear
+                  </Button>
+                </PopoverFooter>
                 </PopoverContent>
                 </Popover>
               </Box>

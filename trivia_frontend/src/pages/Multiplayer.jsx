@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../services/SocketService";
 import Search from "../components/Search/Search";
-import useUserSocketStore from "../stores/userSocketStore";
-import useMessageStore from "../stores/messageStore";
+import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
+import usePlayerStore from "../stores/playerStore";
 
 
 import {
@@ -34,8 +34,9 @@ const GameComponent = () => {
   const toast = useToast();
   const [userName, setUserName] = useState("");
   localStorage.setItem("difficulty", difficulty);
-  const userSocket = useUserSocketStore((state) => state.userSocket);
-  const addMessages = useMessageStore((state) => state.addMessages);
+  const userSocket = getNamespaceSocket("/user");
+  const user_id = localStorage.getItem("userId");
+  const selectedPlayers = usePlayerStore((state) => state.selectedPlayers);
 
 
 
@@ -63,13 +64,19 @@ const GameComponent = () => {
       setGameRoom(currentRoom);
     }
 
-    if (userSocket) {
-      const handleResponse = (message) => {
-        console.log("Response received:", message);
-        addMessages([message]);
-      };
+    connectNamespaceSocket("/user");
 
-      userSocket.on("messaging", handleResponse);
+    // Re-register the user after page refresh
+    userSocket.on('connect', () => {
+      if (user_id) {
+        userSocket.emit('user-online', Number(user_id));
+        console.log('Re-registered user:', user_id);
+      }
+    });
+   
+    if (userSocket) {
+      userSocket.emit("user-invited", selectedPlayers.map((player) => player.id), user_id);
+      console.log("Invited players: ", selectedPlayers.map((player) => player.id));
     }
 
     if (!socket.connected) {
@@ -92,6 +99,7 @@ const GameComponent = () => {
         status: "success",
         duration: 5000,
       });
+      userSocket.emit("invitation", `You are invited by ${userName} to play game in the room ${roomCode}`,user_id);
     });
 
     socket.on("joinedRoom", ({ players: updatedPlayers, roomCode, isHost }) => {
@@ -152,16 +160,12 @@ const GameComponent = () => {
       socket.off("playersUpdate");
       socket.off("gameStatusUpdate");
       socket.off("error");
-      userSocket.off("messaging");
     };
-  }, [navigate, toast, gameRoom, gameStatus, userSocket]);
+  }, [navigate, toast, gameRoom, gameStatus, userSocket, selectedPlayers]);
 
   const handleSendInvite = () => {
-    userSocket.emit("invitation", `You are invited by ${userName} to play game`);
+    userSocket.emit("invitation", `You are invited by ${userName} to play game`,user_id);
     console.log("Inivtation clicked");
-    // userSocket.on("messaging", (message)=> {
-    //   console.log(message);
-    // });
   }
 
   const handleCreateGame = () => {
@@ -267,9 +271,9 @@ const GameComponent = () => {
                     Start Game
                   </Button>
                 )}
-                <Button onClick={handleSendInvite}>
+                {/* <Button onClick={handleSendInvite}>
                   Send invite
-                </Button>
+                </Button> */}
               </HStack>
             </VStack>
           </CardBody>

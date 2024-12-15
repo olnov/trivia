@@ -23,6 +23,10 @@ const useMessageStore = create(
                     storedMessages: state.storedMessages.filter((message)=> message.id !== messageId),
                 }));
             },
+
+            clearMessages: ()=>{
+                set({ storedMessages: [] });
+            }
         }),
         {
             name: "message-store",  

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getUser } from "../services/UserService";
 import { useState, useEffect } from "react";
 import useLoggedInStore from "../stores/loggedInStore";
-import { io } from "socket.io-client";
+import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
 
 const Home = () => {
     const [userName, setUserName] = useState();
@@ -12,7 +12,8 @@ const Home = () => {
     const token = localStorage.getItem("token");
     const navigate = useNavigate();
     const loggedInPlayers = useLoggedInStore((state) => state.loggedInPlayers);
-    const userSocket = io("http://localhost:3000/user");
+    const userSocket = getNamespaceSocket("/user");
+    
 
     console.log("Logged in playes:");
     console.log(loggedInPlayers);
@@ -28,6 +29,17 @@ const Home = () => {
         } catch (error) {
             console.log("Error:", error);
         }
+
+        connectNamespaceSocket("/user");
+        
+        // Re-register the user after page refresh
+        userSocket.on('connect', () => {
+            if (user_id) {
+                userSocket.emit('user-online', Number(user_id)); 
+                console.log('Re-registered user:', user_id);
+            }
+        });
+
         const setLoggedInPlayers = useLoggedInStore.getState().setLoggedInPlayers;
         userSocket.on("updateUsersOnline", (users) => {
             console.log("Adding players: ", users)
@@ -38,7 +50,7 @@ const Home = () => {
             userSocket.off("updateOnlinePlayers");
         };
 
-    },[]);
+    }, []);
 
     const handleClick = () => {
         navigate("/game");
