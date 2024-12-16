@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { json, useNavigate } from "react-router-dom";
 import socket from "../services/SocketService";
 import Search from "../components/Search/Search";
 import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
@@ -79,6 +79,16 @@ const GameComponent = () => {
       console.log("Invited players: ", selectedPlayers.map((player) => player.id));
     }
 
+    userSocket.on("in-app-messaging", (message) => {
+      console.log("Message received:", message);
+      toast({
+        title: "In-App Messaging",
+        description: message,
+        status: "info",
+        duration: 5000,
+      });
+    });
+
     if (!socket.connected) {
       socket.connect();
     }
@@ -99,7 +109,7 @@ const GameComponent = () => {
         status: "success",
         duration: 5000,
       });
-      userSocket.emit("invitation", `You are invited by ${userName} to play game in the room ${roomCode}`,user_id);
+      userSocket.emit("invitation", {userName, roomCode, user_id}, user_id);
     });
 
     socket.on("joinedRoom", ({ players: updatedPlayers, roomCode, isHost }) => {
@@ -160,13 +170,18 @@ const GameComponent = () => {
       socket.off("playersUpdate");
       socket.off("gameStatusUpdate");
       socket.off("error");
+      userSocket.off("connect");
+      userSocket.off("invitation");
+      userSocket.off("in-app-messaging");
+      userSocket.off("user-invited");
+      userSocket.off("user-online");
     };
   }, [navigate, toast, gameRoom, gameStatus, userSocket, selectedPlayers]);
 
-  const handleSendInvite = () => {
-    userSocket.emit("invitation", `You are invited by ${userName} to play game`,user_id);
-    console.log("Inivtation clicked");
-  }
+  // const handleSendInvite = () => {
+  //   userSocket.emit("invitation", `You are invited by ${userName} to play game`,user_id);
+  //   console.log("Inivtation clicked");
+  // }
 
   const handleCreateGame = () => {
     if (!userName) {
@@ -240,18 +255,18 @@ const GameComponent = () => {
               </Select>
               <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Invite people:</Text>
               <Search />
-              <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Enter room code or click "Create Game":</Text>
+              {/* <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Enter room code or click "Create Game":</Text>
               <Input
                 placeholder="Enter game room code"
                 value={gameRoom}
                 onChange={(e) => setGameRoom(e.target.value)}
                 isDisabled={players.length > 0}
-              />
+              /> */}
               <HStack spacing={4}>
                 <Button
                   colorScheme="blue"
                   onClick={handleCreateGame}
-                  isDisabled={players.length > 0 || gameRoom}
+                  isDisabled={players.length > 0 || gameRoom || selectedPlayers.length < 1}
                 >
                   Create Game
                 </Button>

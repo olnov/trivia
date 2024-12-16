@@ -32,7 +32,9 @@ const setupUserSocket = (io) => {
         socket.on("user-online", (userId) => {
             console.log(`User ${userId} is online`);
             socket.join('onlineUsers');
+            socket.join(userId);
             console.log(`Socket id: ${socket.id} joined room onlineUsers`);
+            console.log(`Socket id: ${socket.id} joined room ${userId}`);
             // onlineUsers.set(socket.id, userId);
             onlineUsers.set(socket.id, { userId, socketId: socket.id });
             userNamespace.emit("updateUsersOnline", Array.from(onlineUsers.values()).map((user) => user.userId));
@@ -93,6 +95,12 @@ const setupUserSocket = (io) => {
                 userNamespace.to(invitedRoom).emit("messaging", message);
                 console.log(`Message sent to userId ${userId}:`, message);
             });
+        });
+
+        socket.on("generic-messaging", (message,userId) => {
+            console.log("Message recieved: ", message);
+            userNamespace.to(userId).emit("in-app-messaging", message);
+            console.log(`Message sent to userId ${userId}:`, message);
         });
 
         socket.on("disconnect", () => {

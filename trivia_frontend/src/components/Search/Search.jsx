@@ -19,7 +19,7 @@ import useLoggedInStore from "../../stores/loggedInStore";
 const Search = () => {
     const [playerName, setPlayerName] = useState("");
     const [searchResults, setSearchResults] = useState([]);
-    // const [invitedPlayers, setInvitedPlayers] = useState([]); 
+    const user_id = localStorage.getItem("userId");
     const toast = useToast();
 
     const selectedPlayers = usePlayerStore((state) => state.selectedPlayers);
@@ -38,23 +38,6 @@ const Search = () => {
         fetchSearchResults();
     };
 
-    // const invitePlayer = (id) => {
-    //     if (invitedPlayers.length >= 3) {
-    //         toast({
-    //             title: 'Multiplayer',
-    //             description: 'There should be 4 players in total, including host',
-    //             status: 'warning',
-    //             duration: 9000,
-    //             isClosable: true,
-    //         });
-    //         return;
-    //     }
-
-    //     // Move player from search results to invited players
-    //     setSearchResults((prev) => prev.filter((player) => player.id !== id));
-    //     setInvitedPlayers((prev) => [...prev, searchResults.find((player) => player.id === id)]);
-    // };
-
     const invitePlayer = (player) => {
         if (selectedPlayers.length >= maxPlayers) {
             toast({
@@ -66,15 +49,43 @@ const Search = () => {
             });
             return;
         }
+
+        if (selectedPlayers.find((p) => p.id === player.id)) {
+            toast({
+                title: 'Multiplayer',
+                description: 'Player already invited',
+                status: 'warning',
+                duration: 9000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        if (player.id === Number(user_id)) {
+            toast({
+                title: 'Multiplayer',
+                description: 'You can not add host as a player',
+                status: 'warning',
+                duration: 9000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        if (!loggedInPlayers.includes(player.id)) {
+            toast({
+                title: 'Multiplayer',
+                description: 'Player is offline. Please invite online players only.',
+                status: 'warning',
+                duration: 9000,
+                isClosable: true,
+            });
+            return;
+        }
         addPlayer(player);
         setSearchResults((prev) => prev.filter((p) => p.id !== player.id));
     };
 
-    // const removePlayer = (id) => {
-    //     // Move player from invited list back to search results
-    //     setInvitedPlayers((prev) => prev.filter((player) => player.id !== id));
-    //     setSearchResults((prev) => [...prev, invitedPlayers.find((player) => player.id === id)]);
-    // };
 
     const removePlayerFromList = (id) => {
         const player = selectedPlayers.find((p) => p.id === id);
@@ -85,7 +96,6 @@ const Search = () => {
 
     return (
         <>
-            {/* Search Bar */}
             <HStack width="100%" spacing={4} mb={4}>
                 <Input
                     type="text"
@@ -95,8 +105,6 @@ const Search = () => {
                 />
                 <Button colorScheme={'blue'} onClick={handleSearch}>Find</Button>
             </HStack>
-
-            {/* Columns for Search Results and Invitation List */}
             <Flex width="100%" gap={4}>
                 {/* Search Results Column */}
                 <VStack width={'50%'} align={'stretch'}>
@@ -121,7 +129,6 @@ const Search = () => {
                                 bg="white"
                                 boxShadow="md"
                                 cursor="pointer"
-                                // onClick={() => invitePlayer(item.id)}
                                 onClick={() => invitePlayer(item)}
                             >
                                 <HStack justifyContent="space-between" width="100%">
@@ -162,7 +169,7 @@ const Search = () => {
                         height={'200px'}
                         overflowY={'auto'}
                     >
-                        {selectedPlayers.map((item) => ( //Was invitedPlayers.map((item))
+                        {selectedPlayers.map((item) => (
                             <Card
                                 key={item.id}
                                 p={4}
@@ -171,7 +178,6 @@ const Search = () => {
                                 bg="blue.50"
                                 boxShadow="md"
                                 cursor="pointer"
-                                // onClick={() => removePlayer(item.id)} 
                                 onClick={() => removePlayerFromList(item.id)}
                             >
                                 <HStack justifyContent="space-between" width="100%">

@@ -6,6 +6,7 @@ import ProfileImage from "../components/Profile/ProfileImage";
 import useLoggedInStore from "../stores/loggedInStore";
 import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
 import useMessageStore from "../stores/messageStore";
+import socket from "../services/SocketService";
 
 import {
   Box,
@@ -33,6 +34,7 @@ import {
   PopoverFooter,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon, BellIcon } from "@chakra-ui/icons";
+import { use } from "react";
 
 const NavLink = ({ children }) => {
   return (
@@ -59,6 +61,7 @@ export default function Nav() {
   const [userId, setUserId] = useState(null);
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [hostId, setHostId] = useState(null);
 
   const user_id = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
@@ -76,9 +79,6 @@ export default function Nav() {
     const userSocket = getNamespaceSocket("/user");
     removeLoggedInPlayer(user_id);
     userSocket.emit("user-offline", user_id);
-    // userSocket.on("updateUsersOnline", (users) => {
-    //   console.log("[From logout] Online users:", users);
-    // });
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
     localStorage.removeItem("currentGameRoom");
@@ -108,13 +108,28 @@ export default function Nav() {
       };
 
       userSocket.on("messaging", handleResponse);
+      
+      if (storedMessages.length > 0) {
+        setHostId(storedMessages[storedMessages.length - 1].user_id);
+      }
     }
-  }, [user_id, storedMessages]);
+  }, [user_id, storedMessages, setHostId]);
 
   const handleClearMessages = () => {
     clearMessages();
     localStorage.removeItem("message-store");
   };
+
+  const handleJoinGame = (roomCode) => {
+    console.log("Joining game...");
+    socket.emit("joinRoom", { playerName: username, roomCode: roomCode });
+    navigate("/multiplayer");
+  }
+
+  const handleDecline = () => {
+    userSocket.emit("generic-messaging", `Invitation has been declined by ${username}`, Number(hostId));
+    clearMessages();
+  }
 
   return (
     <>
@@ -139,39 +154,54 @@ export default function Nav() {
               </Button> */}
               <Box position="relative" display="inline-block">
                 <Popover>
-                <PopoverTrigger>
-                <IconButton
-                  icon={<BellIcon />}
-                  aria-label="Notifications"
-                  variant="ghost"
-                  size="lg"
-                />
-                </PopoverTrigger>
-                {storedMessages.length > 0 && (
-                <Box
-                  position="absolute"
-                  top="4px"
-                  right="4px"
-                  width="10px"
-                  height="10px"
-                  bg="red.500"
-                  borderRadius="full"
-                  border="2px solid"
-                  borderColor="white"
-                />
-                )}
-                <PopoverContent>
-                  <PopoverHeader fontWeight="semibold">Notifications</PopoverHeader>
-                  <PopoverCloseButton />
-                  <PopoverBody>
-                    {storedMessages[storedMessages.length - 1] || "No new notifications"}
-                  </PopoverBody>
-                  <PopoverFooter>
-                  <Button colorScheme="blue" size="sm" onClick={handleClearMessages}>
-                    Clear
-                  </Button>
-                </PopoverFooter>
-                </PopoverContent>
+                  <PopoverTrigger>
+                    <IconButton
+                      icon={<BellIcon />}
+                      aria-label="Notifications"
+                      variant="ghost"
+                      size="lg"
+                    />
+                  </PopoverTrigger>
+                  {storedMessages.length > 0 && (
+                    <Box
+                      position="absolute"
+                      top="4px"
+                      right="4px"
+                      width="10px"
+                      height="10px"
+                      bg="red.500"
+                      borderRadius="full"
+                      border="2px solid"
+                      borderColor="white"
+                    />
+                  )}
+                  <PopoverContent>
+                    <PopoverHeader fontWeight="semibold">Notifications</PopoverHeader>
+                    <PopoverCloseButton />
+                    <PopoverBody>
+                      {storedMessages.length > 0 ? (
+                        <>
+                          {/* {setHostId(storedMessages[storedMessages.length - 1].user_id)} */}
+                          <Text>You are invited to play a game by </Text>
+                          <Text>{storedMessages[storedMessages.length - 1].userName}</Text>
+                          <Button colorScheme="green" onClick={() => handleJoinGame(storedMessages[storedMessages.length - 1].roomCode)}>
+                            Accept
+                          </Button>
+                          &nbsp;
+                          <Button colorScheme="red" onClick={handleDecline}>
+                            Decline
+                          </Button>
+                        </>
+                      ) : (
+                        "No new notifications"
+                      )}
+                    </PopoverBody>
+                    <PopoverFooter>
+                      <Button colorScheme="blue" size="sm" onClick={handleClearMessages}>
+                        Clear all messages
+                      </Button>
+                    </PopoverFooter>
+                  </PopoverContent>
                 </Popover>
               </Box>
               <Button data-testid="dark-mode" onClick={toggleColorMode}>
