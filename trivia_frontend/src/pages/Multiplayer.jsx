@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../services/SocketService";
+import Search from "../components/Search/Search";
+import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
+import usePlayerStore from "../stores/playerStore";
+import useInvitationStatusStore from "../stores/invitationStatusStore";
+
 
 import {
   Box,
   VStack,
   Heading,
   Button,
-  Input,
   Text,
   HStack,
   useToast,
   Card,
   CardBody,
   Badge,
-  Center,
   Select,
 } from "@chakra-ui/react";
 
@@ -29,8 +32,13 @@ const GameComponent = () => {
   const [isHost, setIsHost] = useState(false);
   const toast = useToast();
   const [userName, setUserName] = useState("");
-  const [error, setError] = useState("");
   localStorage.setItem("difficulty", difficulty);
+  const userSocket = getNamespaceSocket("/user");
+  const user_id = localStorage.getItem("userId");
+  const selectedPlayers = usePlayerStore((state) => state.selectedPlayers);
+  const clearPlayers = usePlayerStore((state) => state.clearPlayers);
+  const setInvitationStatus = useInvitationStatusStore((state) => state.setInvitationStatus);
+
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -56,6 +64,31 @@ const GameComponent = () => {
       setGameRoom(currentRoom);
     }
 
+    connectNamespaceSocket("/user");
+
+    // Re-register the user after page refresh
+    userSocket.on('connect', () => {
+      if (user_id) {
+        userSocket.emit('user-online', Number(user_id));
+        console.log('Re-registered user:', user_id);
+      }
+    });
+   
+    if (userSocket) {
+      userSocket.emit("user-invited", selectedPlayers.map((player) => player.id), user_id);
+      console.log("Invited players: ", selectedPlayers.map((player) => player.id));
+      userSocket.on("in-app-messaging", (message) => {
+        console.log("Message received:", message);
+        setInvitationStatus(message.status, message.userId);
+        toast({
+          title: "In-App Messaging",
+          description: message.message,
+          status: "info",
+          duration: 5000,
+        });
+      });
+    }
+
     if (!socket.connected) {
       socket.connect();
     }
@@ -65,7 +98,7 @@ const GameComponent = () => {
     });
 
     socket.on("roomCreated", ({ roomCode }) => {
-      console.log("Room created:", roomCode);
+      // console.log("Room created:", roomCode);
       setGameRoom(roomCode);
       setIsHost(true);
       localStorage.setItem("currentGameRoom", roomCode);
@@ -76,10 +109,11 @@ const GameComponent = () => {
         status: "success",
         duration: 5000,
       });
+      userSocket.emit("invitation", {userName, roomCode, user_id}, user_id);
     });
 
     socket.on("joinedRoom", ({ players: updatedPlayers, roomCode, isHost }) => {
-      console.log("Joined room:", roomCode, "Players:", updatedPlayers);
+      // console.log("Joined room:", roomCode, "Players:", updatedPlayers);
       setPlayers(updatedPlayers);
       setGameRoom(roomCode);
       setIsHost(isHost);
@@ -91,8 +125,19 @@ const GameComponent = () => {
       });
     });
 
+    socket.on("gameEnded", () => {
+      console.log("Game ended by host.");
+      localStorage.removeItem("currentGameRoom");
+      localStorage.removeItem("gameStatus");
+      localStorage.removeItem("isHost");
+      localStorage.removeItem("difficulty");
+      clearPlayers();
+      navigate("/multiplayer");
+      window.location.reload();
+    });
+
     socket.on("playersUpdate", ({ players: updatedPlayers }) => {
-      console.log("Players updated:", updatedPlayers);
+      // console.log("Players updated:", updatedPlayers);
       setPlayers(updatedPlayers);
 
       const currentPlayer = updatedPlayers.find((p) => p.id === socket.id);
@@ -103,11 +148,11 @@ const GameComponent = () => {
     });
 
     socket.on("gameStatusUpdate", ({ status }) => {
-      console.log("Game status update:", status, "Current room:", gameRoom);
+      // console.log("Game status update:", status, "Current room:", gameRoom);
       setGameStatus(status);
 
       if (status === "playing") {
-        console.log("Game starting, storing state and navigating");
+        // console.log("Game starting, storing state and navigating");
         localStorage.setItem("currentGameRoom", gameRoom);
         localStorage.setItem("gameStatus", "playing");
         setTimeout(() => {
@@ -136,8 +181,14 @@ const GameComponent = () => {
       socket.off("playersUpdate");
       socket.off("gameStatusUpdate");
       socket.off("error");
+      userSocket.off("connect");
+      userSocket.off("invitation");
+      userSocket.off("in-app-messaging");
+      userSocket.off("user-invited");
+      userSocket.off("user-online");
     };
-  }, [navigate, toast, gameRoom, gameStatus]);
+  }, [navigate, toast, gameRoom, gameStatus, userSocket, selectedPlayers, players]);
+
 
   const handleCreateGame = () => {
     if (!userName) {
@@ -153,19 +204,20 @@ const GameComponent = () => {
     socket.emit("createRoom", { playerName: userName });
   };
 
-  const handleJoinGame = () => {
-    if (!userName || !gameRoom) {
-      toast({
-        title: "Please enter a room code",
-        status: "error",
-        duration: 2000,
-      });
-      return;
-    }
+  // TBD: Consider to remove this feature. Handler for the text field to join a game.
+  // const handleJoinGame = () => {
+  //   if (!userName || !gameRoom) {
+  //     toast({
+  //       title: "Please enter a room code",
+  //       status: "error",
+  //       duration: 2000,
+  //     });
+  //     return;
+  //   }
 
-    localStorage.setItem("currentGameRoom", gameRoom);
-    socket.emit("joinRoom", { playerName: userName, roomCode: gameRoom });
-  };
+  //   localStorage.setItem("currentGameRoom", gameRoom);
+  //   socket.emit("joinRoom", { playerName: userName, roomCode: gameRoom });
+  // };
 
   const handleStartGame = () => {
     if (players.length < 2) {
@@ -185,8 +237,22 @@ const GameComponent = () => {
 
     localStorage.setItem("currentGameRoom", gameRoom);
     localStorage.setItem("gameStatus", "playing");
-    console.log("THIS IS US CHECKING THE ", difficulty);
     socket.emit("startGame", { roomCode: gameRoom, difficulty });
+  };
+
+  const handleEndGame = () => {
+    const roomCode = localStorage.getItem("currentGameRoom");
+    if (!roomCode) return;
+    localStorage.removeItem("gameStatus");
+    localStorage.removeItem("isHost");
+    localStorage.removeItem("difficulty");
+    clearPlayers();
+    socket.emit("endGame", { roomCode });
+    localStorage.removeItem("currentGameRoom");
+    setGameRoom("");
+    setPlayers([]);
+    setIsHost(false);
+    window.location.reload();
   };
 
   const handleSelectDifficulty = (e) => {
@@ -195,46 +261,47 @@ const GameComponent = () => {
   };
 
   return (
-    <Box p={8}>
+    <Box p={8} height="100vh" overflowY="auto">
       <VStack spacing={8} align="stretch">
-        <Heading textAlign="center">Multiplayer Trivia</Heading>
+        <Text textAlign="center" fontSize={'xl'} as={'b'}>Multiplayer Quizzard</Text>
         <Card>
-          <Select
-            placeholder="Select difficulty"
-            onChange={handleSelectDifficulty}
-            value={difficulty}
-          >
-            <option value="easy" selected>
-              Easy
-            </option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </Select>
-
           <CardBody>
-            <VStack spacing={4}>
+            <VStack spacing={2}>
+              <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Game difficulty:</Text>
+              <Select
+                onChange={handleSelectDifficulty}
+                value={difficulty}
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </Select>
+              <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Invite people:</Text>
+              <Search />
+              {/* <Text as={'b'} fontSize={'sm'} alignSelf={'flex-start'}>Enter room code or click "Create Game":</Text>
               <Input
                 placeholder="Enter game room code"
                 value={gameRoom}
                 onChange={(e) => setGameRoom(e.target.value)}
                 isDisabled={players.length > 0}
-              />
+              /> */}
               <HStack spacing={4}>
                 <Button
                   colorScheme="blue"
                   onClick={handleCreateGame}
-                  isDisabled={players.length > 0 || gameRoom}
+                  isDisabled={players.length > 0 || gameRoom || selectedPlayers.length < 1}
                 >
                   Create Game
                 </Button>
-                <Button
+                {/* <Button
                   colorScheme="green"
                   onClick={handleJoinGame}
                   isDisabled={players.length > 0}
                 >
                   Join Game
-                </Button>
+                </Button> */}
                 {isHost && (
+                  <>
                   <Button
                     colorScheme="purple"
                     onClick={handleStartGame}
@@ -242,7 +309,14 @@ const GameComponent = () => {
                   >
                     Start Game
                   </Button>
+                  <Button colorScheme="teal" onClick={handleEndGame}>
+                    Reset Game
+                  </Button>
+                  </>
                 )}
+                {/* <Button onClick={handleSendInvite}>
+                  Send invite
+                </Button> */}
               </HStack>
             </VStack>
           </CardBody>

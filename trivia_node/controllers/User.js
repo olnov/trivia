@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { Op } = require('sequelize');
 
 // Create new user
 exports.createUser = async (req, res)=> {
@@ -75,5 +76,27 @@ exports.deleteUserById = async (req,res) => {
         res.status(204).json({ message: 'User deleted successfully.'});
     }catch(error){
         res.status(500).json({ message: 'Error deleting user:', error:error.message});
+    }
+}
+
+// Get user by partial name
+exports.getUserByPartialName = async(req,res) => {
+    try {
+        const { partialName } = req.body;
+        if (!partialName || typeof partialName !== 'string') {
+            return res.status(400).json({ message: 'Invalid or missing partialName' });
+        }
+        const users = await User.findAll({
+            attributes: ['id','fullName','profileImage'],
+            where: {
+                fullName: {
+                    [Op.like]: `%${partialName}%`,
+                },
+            },
+        });
+        return res.status(200).json(users);
+    }catch(error){
+        res.status(500).json({ message: 'Error getting user: ', error: error.message});
+        throw error;
     }
 }

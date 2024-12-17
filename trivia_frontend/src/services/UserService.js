@@ -84,3 +84,23 @@ export const isAuthenticated = () => {
     }
     return false;
   };
+
+// Search
+
+export const searchPlayers = async (partialName) => {
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+        },
+        body: JSON.stringify({partialName}),
+    };
+
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users/search`, requestOptions);
+    if (response.status === 200) {
+        const data = await response.json();
+        return data;
+    } else {
+        throw new Error(`Search failed: ${response.status}`);
+    }
+}

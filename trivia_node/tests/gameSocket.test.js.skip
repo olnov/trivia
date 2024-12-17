@@ -1,0 +1,265 @@
+// tests/gameSocket.test.js
+const http = require('http');
+const ioClient = require('socket.io-client');
+const fetch = require('node-fetch');
+const setupSocket = require('../sockets/gameSocket');
+const { Server } = require("socket.io");
+
+// Mock node-fetch
+jest.mock('node-fetch');
+const { Response } = jest.requireActual('node-fetch');
+
+describe('Game Socket Server', () => {
+    let httpServer;
+    let port;
+    let clientSocket; // Declare clientSocket
+
+    // Sample questions to be returned by the mocked fetch
+    const sampleQuestions = [
+        {
+            category: "Science & Nature",
+            type: "multiple",
+            difficulty: "easy",
+            question: "What is the chemical symbol for Hydrogen?",
+            correct_answer: "H",
+            incorrect_answers: ["He", "Li", "Be"]
+        },
+        // Add more questions as needed
+    ];
+
+    beforeEach((done) => {
+        // Create HTTP server
+        httpServer = http.createServer();
+        setupSocket(httpServer); // Initialize your Socket.io server
+
+        // Start server
+        httpServer.listen(() => {
+            port = httpServer.address().port;
+            // Connect clientSocket
+            clientSocket = ioClient(`http://localhost:${port}`, {
+                reconnectionDelay: 0,
+                forceNew: true,
+                transports: ['websocket'],
+            });
+
+            clientSocket.on('connect', () => {
+                console.log('Client connected');
+                done();
+            });
+
+            clientSocket.on('connect_error', (err) => {
+                console.error('Connection Error:', err);
+            });
+        });
+    });
+
+    afterEach((done) => {
+        if (clientSocket.connected) {
+            clientSocket.disconnect();
+        }
+        httpServer.close(done);
+    });
+
+    beforeEach(() => {
+        // Clear all instances and calls to constructor and all methods:
+        fetch.mockClear();
+    });
+
+    describe('Room Creation', () => {
+        it('should prevent joining a full room', (done) => {
+            // Create host client
+            const hostClient = ioClient(`http://localhost:${port}`, {
+                reconnectionDelay: 0,
+                forceNew: true,
+                transports: ['websocket'],
+            });
+
+            hostClient.on('connect', () => {
+                // Create room
+                hostClient.emit('createRoom', { playerName: 'Host', difficulty: 'easy' });
+
+                hostClient.on('roomCreated', (roomData) => {
+                    const roomCode = roomData.roomCode;
+
+                    // Create 4 additional clients to fill the room
+                    const fillClients = Array.from({ length: 4 }, (_, index) => {
+                        const client = ioClient(`http://localhost:${port}`, {
+                            reconnectionDelay: 0,
+                            forceNew: true,
+                            transports: ['websocket'],
+                        });
+
+                        client.emit('joinRoom', {
+                            playerName: `Player${index + 1}`,
+                            roomCode
+                        });
+
+                        return client;
+                    });
+
+                    // Wait for the room to be filled
+                    setTimeout(() => {
+                        // Create a new client to attempt joining full room
+                        const extraClient = ioClient(`http://localhost:${port}`, {
+                            reconnectionDelay: 0,
+                            forceNew: true,
+                            transports: ['websocket'],
+                        });
+
+                        extraClient.emit('joinRoom', {
+                            playerName: 'ExtraPlayer',
+                            roomCode
+                        });
+
+                        extraClient.on('error', (error) => {
+                            try {
+                                expect(error.message).toBe('Room is full');
+
+                                // Cleanup
+                                [hostClient, extraClient, ...fillClients].forEach(c => c.disconnect());
+
+                                done();
+                            } catch (assertionError) {
+                                done(assertionError);
+                            }
+                        });
+
+                        extraClient.on('joinedRoom', () => {
+                            // Should not reach here
+                            extraClient.disconnect();
+                            done(new Error('Joined a full room'));
+                        });
+                    }, 500); // Adjust the timeout as needed
+                });
+            });
+        }, 10000); // Increased timeout for this test
+    });
+
+    describe('Game Mechanics', () => {
+        it('should fetch questions when starting a game', async () => {
+            const mockQuestions = {
+                response_code: 0,
+                results: sampleQuestions
+            };
+
+            fetch.mockResolvedValueOnce(new Response(JSON.stringify(mockQuestions)));
+
+            // Emit 'createRoom' event
+            clientSocket.emit('createRoom', { playerName: 'TestPlayer', difficulty: 'easy' });
+
+            // Listen for 'roomCreated' event
+            const roomCreated = await new Promise((resolve, reject) => {
+                clientSocket.on('roomCreated', (roomData) => {
+                    resolve(roomData.roomCode);
+                });
+
+                clientSocket.on('error', (err) => {
+                    reject(err);
+                });
+            });
+
+            // Emit 'startGame' event
+            clientSocket.emit('startGame', { roomCode: roomCreated, difficulty: 'easy' });
+
+            // Listen for 'gameQuestion' event
+            await new Promise((resolve, reject) => {
+                clientSocket.on('gameQuestion', (questionData) => {
+                    try {
+                        expect(questionData.question).toBe('What is the chemical symbol for Hydrogen?');
+                        expect(questionData.options).toHaveLength(4);
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                clientSocket.on('error', (err) => {
+                    reject(err);
+                });
+            });
+        }, 10000); // Increased timeout for this test
+    });
+
+    // describe('Player Management', () => {
+    //     it('should handle player online status', (done) => {
+    //         jest.setTimeout(10000);
+
+    //         clientSocket.emit('playerOnline', { userId: 'user123' });
+
+    //         clientSocket.on('onlineUsers:', (onlineUsers) => {
+    //             try {
+    //                 expect(Array.isArray(onlineUsers)).toBe(true);
+    //                 expect(onlineUsers).toContainEqual({
+    //                     userId: 'user123',
+    //                     sockeyId: clientSocket.id
+    //                 });
+    //                 done();
+    //             } catch (error) {
+    //                 done(error);
+    //             }
+    //         });
+    //     });
+    // });
+
+    describe('Game Flow', () => {
+        it('should end game after all questions', async () => {
+            const mockQuestions = {
+                response_code: 0,
+                results: sampleQuestions
+            };
+
+            fetch.mockResolvedValueOnce(new Response(JSON.stringify(mockQuestions)));
+
+            // Emit 'createRoom' event
+            clientSocket.emit('createRoom', { playerName: 'TestPlayer', difficulty: 'easy' });
+
+            // Listen for 'roomCreated' event
+            const roomCode = await new Promise((resolve, reject) => {
+                clientSocket.on('roomCreated', (roomData) => {
+                    resolve(roomData.roomCode);
+                });
+
+                clientSocket.on('error', (err) => {
+                    reject(err);
+                });
+            });
+
+            // Emit 'startGame' event
+            clientSocket.emit('startGame', { roomCode, difficulty: 'easy' });
+
+            // Listen for 'gameQuestion' event
+            await new Promise((resolve, reject) => {
+                clientSocket.on('gameQuestion', (questionData) => {
+                    // Submit the correct answer
+                    clientSocket.emit('submitAnswer', {
+                        answer: 'H',
+                        roomCode: roomCode,
+                        questionIndex: 0
+                    });
+                    resolve();
+                });
+
+                clientSocket.on('error', (err) => {
+                    reject(err);
+                });
+            });
+
+            // Listen for 'gameOver' event
+            await new Promise((resolve, reject) => {
+                clientSocket.on('gameOver', (gameOverData) => {
+                    try {
+                        expect(gameOverData.finalScores).toBeTruthy();
+                        expect(gameOverData.finalScores[0].score).toBe(1);
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                clientSocket.on('error', (err) => {
+                    reject(err);
+                });
+            });
+        }, 10000); // Increased timeout for this test
+    });
+});

@@ -158,6 +158,7 @@ const setupSocket = (server) => {
       origin: [
         "http://localhost:5173",
         "https://trivia-react-latest.onrender.com",
+        "http://localhost:4173",
       ],
     },
   });
@@ -257,6 +258,7 @@ const setupSocket = (server) => {
     // Handle disconnection
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
+     
       if (!currentRoom) return;
 
       const room = gameRooms.get(currentRoom);

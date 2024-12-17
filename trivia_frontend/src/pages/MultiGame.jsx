@@ -20,6 +20,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import socket from "../services/SocketService";
+import usePlayerStore from "../stores/playerStore";
 
 const MultiGame = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const MultiGame = () => {
     const storedIsHost = localStorage.getItem("isHost");
     return storedIsHost === "true";
   });
+  const clearPlayers = usePlayerStore((state) => state.clearPlayers);
 
   // Decode HTML entities (utility function)
   const decodeHTMLEntities = (text) => {
@@ -103,7 +105,9 @@ const MultiGame = () => {
         setQuestion(null);
         setTimeLeft(15);
         setSelectedAnswer(null);
+        clearPlayers();
         navigate("/multiplayer");
+        window.location.reload();
       });
 
       socket.on("timeUpdate", ({ timeLeft }) => {

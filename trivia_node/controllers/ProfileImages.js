@@ -61,12 +61,13 @@ exports.getProfileImage = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        // Check is disabled as I expect to receive at least full name
         // Check if user has profile image
-        if (!user.profileImage) {
-            return res.status(404).json({ message: 'Profile image not found' });
-        }
+        // if (!user.profileImage) {
+        //     return res.status(404).json({ message: 'Profile image not found' });
+        // }
 
-        res.status(200).json({ imageUrl: user.profileImage });
+        res.status(200).json({ fullName: user.fullName, imageUrl: user.profileImage });
     } catch (error) {
         res.status(500).json({ message: "Can't retrieve profile image", error: error.message });
     }

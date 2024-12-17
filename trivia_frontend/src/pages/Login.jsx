@@ -12,7 +12,9 @@ import Logo from "../assets/images/octopus-logo.png";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser, login, isAuthenticated } from "../services/UserService";
-import socket from "../services/SocketService";
+import socket, {getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
+import useLoggedInStore from "../stores/loggedInStore";
+// import useUserSocketStore from "../stores/userSocketStore";
 import "./Style.css";
 
 const Login = () => {
@@ -22,19 +24,14 @@ const Login = () => {
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
 
-  //Add background
-  // useEffect(() => {
-  //     document.body.classList.add('page-background');
-
-  //     return () => {
-  //         document.body.classList.remove('page-background');
-  //     };
-  // }, []);
-
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
   const currentGameRoom = localStorage.getItem("currentGameRoom");
   const gameStatus = localStorage.getItem("gameStatus");
+  // const connectUserSocket = useUserSocketStore((state) => state.connectUserSocket);
+  // const userSocket = useUserSocketStore((state) => state.userSocket);
+  const userSocket = getNamespaceSocket("/user");
+  
 
   const storageCheck = async () => {
     if (userId && token && isAuthenticated()) {
@@ -49,15 +46,23 @@ const Login = () => {
   };
 
   useEffect(() => {
+    // connectUserSocket();
+    connectNamespaceSocket("/user");
     storageCheck();
-  }, []);
+  },[currentGameRoom, gameStatus, userId, token, navigate]);
 
   const getLoggedIn = async (e) => {
     e.preventDefault();
     try {
+      const addLoggedInPlayer = useLoggedInStore.getState().addLoggedInPlayer;
       const data = await login(email, password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
+      userSocket.emit("user-online", data.userId);
+      userSocket.on("updateUsersOnline", (users) => {
+        addLoggedInPlayer(users);
+        console.log("[From login] Online users:", users);
+      });
       navigate("/home");
     } catch (err) {
       const errorMessage =
