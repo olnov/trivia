@@ -19,6 +19,11 @@ const usePlayerStore = create((set)=> ({
             set((state)=> ({
                 selectedPlayers: state.selectedPlayers.filter((player)=> player.id != id),
             })),
+        
+        clearPlayers: () =>
+            set((state) => ({
+                selectedPlayers: [],
+            })),
 }))
 
 export default usePlayerStore;

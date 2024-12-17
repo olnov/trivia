@@ -7,13 +7,13 @@ const useMessageStore = create(
             storedMessages: [],
 
             setMessages: (messages)=>{
-                console.log("Updating store with messages:", messages);
+                // console.log("Updating store with messages:", messages);
                 set ({ storedMessages: messages });
             },
 
             addMessages: (messages)=>{
                 set((state)=>{
-                    console.log("Adding messages to store:", messages);
+                    // console.log("Adding messages to store:", messages);
                     return { storedMessages: [...state.storedMessages, ...messages] };
                 })
             },

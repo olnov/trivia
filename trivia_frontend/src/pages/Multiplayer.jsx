@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { json, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import socket from "../services/SocketService";
 import Search from "../components/Search/Search";
 import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
 import usePlayerStore from "../stores/playerStore";
+import useInvitationStatusStore from "../stores/invitationStatusStore";
 
 
 import {
@@ -11,7 +12,6 @@ import {
   VStack,
   Heading,
   Button,
-  Input,
   Text,
   HStack,
   useToast,
@@ -19,7 +19,6 @@ import {
   CardBody,
   Badge,
   Select,
-  FormLabel,
 } from "@chakra-ui/react";
 
 import { getUser } from "../services/UserService";
@@ -37,7 +36,8 @@ const GameComponent = () => {
   const userSocket = getNamespaceSocket("/user");
   const user_id = localStorage.getItem("userId");
   const selectedPlayers = usePlayerStore((state) => state.selectedPlayers);
-
+  const clearPlayers = usePlayerStore((state) => state.clearPlayers);
+  const setInvitationStatus = useInvitationStatusStore((state) => state.setInvitationStatus);
 
 
   useEffect(() => {
@@ -77,17 +77,17 @@ const GameComponent = () => {
     if (userSocket) {
       userSocket.emit("user-invited", selectedPlayers.map((player) => player.id), user_id);
       console.log("Invited players: ", selectedPlayers.map((player) => player.id));
-    }
-
-    userSocket.on("in-app-messaging", (message) => {
-      console.log("Message received:", message);
-      toast({
-        title: "In-App Messaging",
-        description: message,
-        status: "info",
-        duration: 5000,
+      userSocket.on("in-app-messaging", (message) => {
+        console.log("Message received:", message);
+        setInvitationStatus(message.status, message.userId);
+        toast({
+          title: "In-App Messaging",
+          description: message.message,
+          status: "info",
+          duration: 5000,
+        });
       });
-    });
+    }
 
     if (!socket.connected) {
       socket.connect();
@@ -98,7 +98,7 @@ const GameComponent = () => {
     });
 
     socket.on("roomCreated", ({ roomCode }) => {
-      console.log("Room created:", roomCode);
+      // console.log("Room created:", roomCode);
       setGameRoom(roomCode);
       setIsHost(true);
       localStorage.setItem("currentGameRoom", roomCode);
@@ -113,7 +113,7 @@ const GameComponent = () => {
     });
 
     socket.on("joinedRoom", ({ players: updatedPlayers, roomCode, isHost }) => {
-      console.log("Joined room:", roomCode, "Players:", updatedPlayers);
+      // console.log("Joined room:", roomCode, "Players:", updatedPlayers);
       setPlayers(updatedPlayers);
       setGameRoom(roomCode);
       setIsHost(isHost);
@@ -125,8 +125,19 @@ const GameComponent = () => {
       });
     });
 
+    socket.on("gameEnded", () => {
+      console.log("Game ended by host.");
+      localStorage.removeItem("currentGameRoom");
+      localStorage.removeItem("gameStatus");
+      localStorage.removeItem("isHost");
+      localStorage.removeItem("difficulty");
+      clearPlayers();
+      navigate("/multiplayer");
+      window.location.reload();
+    });
+
     socket.on("playersUpdate", ({ players: updatedPlayers }) => {
-      console.log("Players updated:", updatedPlayers);
+      // console.log("Players updated:", updatedPlayers);
       setPlayers(updatedPlayers);
 
       const currentPlayer = updatedPlayers.find((p) => p.id === socket.id);
@@ -137,11 +148,11 @@ const GameComponent = () => {
     });
 
     socket.on("gameStatusUpdate", ({ status }) => {
-      console.log("Game status update:", status, "Current room:", gameRoom);
+      // console.log("Game status update:", status, "Current room:", gameRoom);
       setGameStatus(status);
 
       if (status === "playing") {
-        console.log("Game starting, storing state and navigating");
+        // console.log("Game starting, storing state and navigating");
         localStorage.setItem("currentGameRoom", gameRoom);
         localStorage.setItem("gameStatus", "playing");
         setTimeout(() => {
@@ -176,12 +187,8 @@ const GameComponent = () => {
       userSocket.off("user-invited");
       userSocket.off("user-online");
     };
-  }, [navigate, toast, gameRoom, gameStatus, userSocket, selectedPlayers]);
+  }, [navigate, toast, gameRoom, gameStatus, userSocket, selectedPlayers, players]);
 
-  // const handleSendInvite = () => {
-  //   userSocket.emit("invitation", `You are invited by ${userName} to play game`,user_id);
-  //   console.log("Inivtation clicked");
-  // }
 
   const handleCreateGame = () => {
     if (!userName) {
@@ -197,19 +204,20 @@ const GameComponent = () => {
     socket.emit("createRoom", { playerName: userName });
   };
 
-  const handleJoinGame = () => {
-    if (!userName || !gameRoom) {
-      toast({
-        title: "Please enter a room code",
-        status: "error",
-        duration: 2000,
-      });
-      return;
-    }
+  // TBD: Consider to remove this feature. Handler for the text field to join a game.
+  // const handleJoinGame = () => {
+  //   if (!userName || !gameRoom) {
+  //     toast({
+  //       title: "Please enter a room code",
+  //       status: "error",
+  //       duration: 2000,
+  //     });
+  //     return;
+  //   }
 
-    localStorage.setItem("currentGameRoom", gameRoom);
-    socket.emit("joinRoom", { playerName: userName, roomCode: gameRoom });
-  };
+  //   localStorage.setItem("currentGameRoom", gameRoom);
+  //   socket.emit("joinRoom", { playerName: userName, roomCode: gameRoom });
+  // };
 
   const handleStartGame = () => {
     if (players.length < 2) {
@@ -230,6 +238,21 @@ const GameComponent = () => {
     localStorage.setItem("currentGameRoom", gameRoom);
     localStorage.setItem("gameStatus", "playing");
     socket.emit("startGame", { roomCode: gameRoom, difficulty });
+  };
+
+  const handleEndGame = () => {
+    const roomCode = localStorage.getItem("currentGameRoom");
+    if (!roomCode) return;
+    localStorage.removeItem("gameStatus");
+    localStorage.removeItem("isHost");
+    localStorage.removeItem("difficulty");
+    clearPlayers();
+    socket.emit("endGame", { roomCode });
+    localStorage.removeItem("currentGameRoom");
+    setGameRoom("");
+    setPlayers([]);
+    setIsHost(false);
+    window.location.reload();
   };
 
   const handleSelectDifficulty = (e) => {
@@ -270,14 +293,15 @@ const GameComponent = () => {
                 >
                   Create Game
                 </Button>
-                <Button
+                {/* <Button
                   colorScheme="green"
                   onClick={handleJoinGame}
                   isDisabled={players.length > 0}
                 >
                   Join Game
-                </Button>
+                </Button> */}
                 {isHost && (
+                  <>
                   <Button
                     colorScheme="purple"
                     onClick={handleStartGame}
@@ -285,6 +309,10 @@ const GameComponent = () => {
                   >
                     Start Game
                   </Button>
+                  <Button colorScheme="teal" onClick={handleEndGame}>
+                    Reset Game
+                  </Button>
+                  </>
                 )}
                 {/* <Button onClick={handleSendInvite}>
                   Send invite

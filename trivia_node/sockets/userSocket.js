@@ -33,8 +33,8 @@ const setupUserSocket = (io) => {
             console.log(`User ${userId} is online`);
             socket.join('onlineUsers');
             socket.join(userId);
-            console.log(`Socket id: ${socket.id} joined room onlineUsers`);
-            console.log(`Socket id: ${socket.id} joined room ${userId}`);
+            // console.log(`Socket id: ${socket.id} joined room onlineUsers`);
+            // console.log(`Socket id: ${socket.id} joined room ${userId}`);
             // onlineUsers.set(socket.id, userId);
             onlineUsers.set(socket.id, { userId, socketId: socket.id });
             userNamespace.emit("updateUsersOnline", Array.from(onlineUsers.values()).map((user) => user.userId));
@@ -48,9 +48,9 @@ const setupUserSocket = (io) => {
                 return;
             }
             const invitedRoom = generateRoomCode(hostId);
-            console.log("[Online users]:", onlineUsers);
-            console.log("[Invited users sockets]:", onlineUsers.get(userIds[0])?.socketId);
-            console.log(`Users ${userIds.join(", ")} are invited to room ${invitedRoom}`);
+            // console.log("[Online users]:", onlineUsers);
+            // console.log("[Invited users sockets]:", onlineUsers.get(userIds[0])?.socketId);
+            // console.log(`Users ${userIds.join(", ")} are invited to room ${invitedRoom}`);
             userIds.forEach((userId) => {
                 const userSocketEntry = Array.from(onlineUsers.values()).find(user => user.userId === userId);
                 if (userSocketEntry) {

@@ -11,19 +11,16 @@ const Home = () => {
     const user_id = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
     const navigate = useNavigate();
-    const loggedInPlayers = useLoggedInStore((state) => state.loggedInPlayers);
+    // const loggedInPlayers = useLoggedInStore((state) => state.loggedInPlayers);
     const userSocket = getNamespaceSocket("/user");
     
-
-    console.log("Logged in playes:");
-    console.log(loggedInPlayers);
 
     useEffect(() => {
         try {
             const fetchUser = async () => {
                 const user = await getUser(user_id, token);
                 setUserName(user.fullName);
-                console.log("Name: ", user.fullName);
+                // console.log("Name: ", user.fullName);
             };
             fetchUser();
         } catch (error) {
@@ -42,7 +39,7 @@ const Home = () => {
 
         const setLoggedInPlayers = useLoggedInStore.getState().setLoggedInPlayers;
         userSocket.on("updateUsersOnline", (users) => {
-            console.log("Adding players: ", users)
+            // console.log("Adding players: ", users)
             setLoggedInPlayers(users);
         });
 

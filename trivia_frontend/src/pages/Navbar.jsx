@@ -8,10 +8,10 @@ import { getNamespaceSocket, connectNamespaceSocket } from "../services/SocketSe
 import useMessageStore from "../stores/messageStore";
 import socket from "../services/SocketService";
 
+
 import {
   Box,
   Flex,
-  Avatar,
   Text,
   Button,
   Menu,
@@ -19,7 +19,6 @@ import {
   MenuList,
   MenuItem,
   MenuDivider,
-  useDisclosure,
   useColorModeValue,
   Stack,
   useColorMode,
@@ -34,33 +33,14 @@ import {
   PopoverFooter,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon, BellIcon } from "@chakra-ui/icons";
-import { use } from "react";
 
-const NavLink = ({ children }) => {
-  return (
-    <Box
-      as="a"
-      px={2}
-      py={1}
-      rounded={"md"}
-      _hover={{
-        textDecoration: "none",
-        bg: useColorModeValue("gray.200", "gray.700"),
-      }}
-      href={"#"}
-    >
-      {children}
-    </Box>
-  );
-};
 
 export default function Nav() {
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
-  const [userId, setUserId] = useState(null);
+  
   const { colorMode, toggleColorMode } = useColorMode();
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [hostId, setHostId] = useState(null);
 
   const user_id = localStorage.getItem("userId");
@@ -103,12 +83,12 @@ export default function Nav() {
     connectNamespaceSocket("/user");
     if (userSocket) {
       const handleResponse = (message) => {
-        console.log("Response received:", message);
+        // console.log("Response received:", message);
         addMessages([message]);
       };
 
       userSocket.on("messaging", handleResponse);
-      
+
       if (storedMessages.length > 0) {
         setHostId(storedMessages[storedMessages.length - 1].user_id);
       }
@@ -121,13 +101,15 @@ export default function Nav() {
   };
 
   const handleJoinGame = (roomCode) => {
-    console.log("Joining game...");
+    // console.log("Joining game...");
+    userSocket.emit("generic-messaging", {message:`Invitation has been accepted by ${username}`, status:"accepted", userId: Number(user_id) }, Number(hostId));
     socket.emit("joinRoom", { playerName: username, roomCode: roomCode });
+    clearMessages();
     navigate("/multiplayer");
   }
 
   const handleDecline = () => {
-    userSocket.emit("generic-messaging", `Invitation has been declined by ${username}`, Number(hostId));
+    userSocket.emit("generic-messaging", {message:`Invitation has been declined by ${username}`, status:"declined", userId: Number(user_id) }, Number(hostId));
     clearMessages();
   }
 

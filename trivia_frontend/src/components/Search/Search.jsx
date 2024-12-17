@@ -14,6 +14,7 @@ import { searchPlayers } from "../../services/UserService";
 import ProfileImage from "../Profile/ProfileImage";
 import usePlayerStore from "../../stores/playerStore";
 import useLoggedInStore from "../../stores/loggedInStore";
+import useInvitationStatusStore from "../../stores/invitationStatusStore";
 
 
 const Search = () => {
@@ -27,6 +28,7 @@ const Search = () => {
     const removePlayer = usePlayerStore((state) => state.removePlayer);
     const maxPlayers = usePlayerStore((state) => state.maxPlayers);
     const loggedInPlayers = useLoggedInStore((state) => state.loggedInPlayers);
+    const invitationStatus = useInvitationStatusStore((state) => state.invitationStatus);
     
 
     const fetchSearchResults = async () => {
@@ -189,6 +191,16 @@ const Search = () => {
                                                 <Badge colorScheme="green">Online</Badge>
                                             ) : (
                                                 <Badge>Offline</Badge>
+                                            )}
+                                        </Text>
+                                        <Text fontSize="sm">
+                                            Invitation Status:{" "}
+                                            {invitationStatus[item.id] === 'accepted' ? (
+                                                <Badge colorScheme="green">Accepted</Badge>
+                                            ) : invitationStatus[item.id] === 'declined' ? (
+                                                <Badge colorScheme="red">Declined</Badge>
+                                            ) : (
+                                                <Badge>Pending</Badge>
                                             )}
                                         </Text>
                                     </VStack>
