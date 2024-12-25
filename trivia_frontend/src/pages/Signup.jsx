@@ -43,15 +43,16 @@ const Signup = () => {
         }
     }
 
-    const validatePassword = (password) => {
-        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[~`!#$%^&*+=\-\[\]\\';,/{}|\\":<>?])(?=.{8,})/;
-        setIsPasswordValid(regex.test(password));
-    }
+    // const validatePassword = (password) => {
+    //     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[~`!#$%^&*+=\-\[\]\\';,/{}|\\":<>?])(?=.{8,})/;
+    //     setIsPasswordValid(regex.test(password));
+    // }
 
     const handlePasswordChange = (e) => {
         const newPassword = e.target.value;
         setPassword(newPassword);
-        validatePassword(newPassword);
+        // validatePassword(newPassword);
+        setIsPasswordValid(true) // Toggle QG-25: To skip password complexity check
     };
 
     return (
@@ -119,7 +120,7 @@ const Signup = () => {
                                     onBlur={handleBlur}
                                     required
                                 />
-                                {isFocused && (
+                                {/* {isFocused && (
                                     <FormHelperText textAlign={'justify'}>
                                         <Text fontSize='xs'>
                                             At least one uppercase letter, one lowercase letter,
@@ -127,7 +128,7 @@ const Signup = () => {
                                             Minimum 8 characters long.
                                         </Text>
                                     </FormHelperText>
-                                )}
+                                )} */}
                                 <FormLabel htmlFor='confirmPassword'>Confirm password</FormLabel>
                                 <Input
                                     type="password"

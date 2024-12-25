@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 import { getUser, login, isAuthenticated } from "../services/UserService";
 import socket, {getNamespaceSocket, connectNamespaceSocket } from "../services/SocketService";
 import useLoggedInStore from "../stores/loggedInStore";
-// import useUserSocketStore from "../stores/userSocketStore";
 import "./Style.css";
 
 const Login = () => {
@@ -28,8 +27,6 @@ const Login = () => {
   const token = localStorage.getItem("token");
   const currentGameRoom = localStorage.getItem("currentGameRoom");
   const gameStatus = localStorage.getItem("gameStatus");
-  // const connectUserSocket = useUserSocketStore((state) => state.connectUserSocket);
-  // const userSocket = useUserSocketStore((state) => state.userSocket);
   const userSocket = getNamespaceSocket("/user");
   
 
